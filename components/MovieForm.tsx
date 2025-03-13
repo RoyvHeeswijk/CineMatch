@@ -10,6 +10,11 @@ interface MovieFormProps {
 export default function MovieForm({ setRecommendations, setLoading }: MovieFormProps) {
   const [moviePreferences, setMoviePreferences] = useState('');
 
+  // Simple function to generate a random ID
+  const generateId = () => {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -24,9 +29,10 @@ export default function MovieForm({ setRecommendations, setLoading }: MovieFormP
       });
 
       const data = await response.json();
-      
+
       // Format recommendations to match TrendingSection expectations
       const formattedRecommendations = data.recommendations.map((movie: any) => ({
+        id: movie.id || generateId(), // Use our custom ID generator
         title: movie.title,
         posterPath: movie.posterPath,
         releaseDate: movie.releaseDate,

@@ -5,9 +5,10 @@ import RecommendationList from '@/components/RecommendationList';
 import Head from 'next/head';
 import WishlistButton from '@/components/WishlistButton';
 import { useWishlist } from '@/context/WishlistContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 
 export default function Home() {
-    const [recommendations, setRecommendations] = useState([]);
+    const [recommendations, setRecommendations] = useState<any[]>([]);
     const [trendingMovies, setTrendingMovies] = useState([]);
     const [loading, setLoading] = useState(false);
     const { wishlistCount } = useWishlist();
@@ -27,22 +28,8 @@ export default function Home() {
         }
     };
 
-    const scrollLeft = () => {
-        const container = document.getElementById('recommendations-container');
-        if (container) {
-            container.scrollBy({ left: -300, behavior: 'smooth' });
-        }
-    };
-
-    const scrollRight = () => {
-        const container = document.getElementById('recommendations-container');
-        if (container) {
-            container.scrollBy({ left: 300, behavior: 'smooth' });
-        }
-    };
-
     return (
-        <>
+        <WishlistProvider>
             <Head>
                 <title>Movie Recommender</title>
                 <meta name="description" content="Find your next favorite movie" />
@@ -74,7 +61,7 @@ export default function Home() {
                     {/* Search Section */}
                     <div className="mb-20 max-w-2xl mx-auto backdrop-blur-sm bg-black/30 p-8 rounded-xl shadow-2xl border border-gray-800">
                         <h2 className="text-2xl font-semibold mb-6">Find Movies For You</h2>
-                        <MovieForm setRecommendations={setRecommendations as React.Dispatch<React.SetStateAction<any[]>>} setLoading={setLoading} />
+                        <MovieForm setRecommendations={setRecommendations} setLoading={setLoading} />
 
                         {loading && (
                             <div className="text-center mt-8">
@@ -86,48 +73,12 @@ export default function Home() {
 
                     {/* Recommendations Section */}
                     {recommendations.length > 0 && (
-                        <div className="mb-20">
-                            <div className="flex items-center mb-6">
-                                <h2 className="text-3xl font-bold">Your Recommended Movies</h2>
-                                <div className="ml-4 px-3 py-1 bg-purple-600 rounded-full text-xs font-semibold">
-                                    {recommendations.length} movies
-                                </div>
-                            </div>
-                            <p className="text-gray-400 mb-8">Based on your preferences, here are some movies you might enjoy.</p>
-                            
-                            <div className="relative">
-                                {/* Left scroll button */}
-                                <button 
-                                    onClick={scrollLeft}
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full shadow-lg"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                
-                                {/* Scrollable container */}
-                                <div 
-                                    id="recommendations-container"
-                                    className="overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
-                                >
-                                    <RecommendationList recommendations={recommendations} />
-                                </div>
-                                
-                                {/* Right scroll button */}
-                                <button 
-                                    onClick={scrollRight}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full shadow-lg"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                                
-                                {/* Gradient overlays */}
-                                <div className="absolute left-12 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-900 to-transparent pointer-events-none"></div>
-                                <div className="absolute right-12 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-900 to-transparent pointer-events-none"></div>
-                            </div>
+                        <div className="mb-20 backdrop-blur-sm bg-black/30 p-8 rounded-xl border border-gray-800 shadow-xl">
+                            <RecommendationList 
+                                recommendations={recommendations} 
+                                title="Your Recommended Movies"
+                                description="Based on your preferences, here are some movies you might enjoy."
+                            />
                         </div>
                     )}
 
@@ -181,6 +132,6 @@ export default function Home() {
                     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
                 }
             `}</style>
-        </>
+        </WishlistProvider>
     );
 }
