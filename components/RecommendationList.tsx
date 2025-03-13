@@ -1,295 +1,300 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
-
-// Define interfaces for TMDB API responses
-interface Genre {
-    id: number;
-    name: string;
-}
-
-interface CastMember {
-    id: number;
-    name: string;
-    character: string;
-    profile_path: string | null;
-}
-
-interface CrewMember {
-    id: number;
-    name: string;
-    job: string;
-    department: string;
-}
-
-interface Movie {
-    id: string;
-    title: string;
-    description?: string;
-    overview?: string;
-    posterPath: string | null;
-    releaseDate: string;
-    runtime?: number;
-    rating?: string;
-    genres?: string;
-    director?: string;
-    comparison?: string;
-    cast?: string;
-    tmdbId?: string;
-    requestedGenres?: string[];
-    preferenceDetails?: {
-        basedOn: string | string[];
-        minRating: string;
-        yearRange?: {
-            min: string;
-            max: string;
-        };
-        additionalRequests?: string;
-    };
-    userPreferences?: {
-        likedMovies?: string[];
-        requestedGenres?: string[];
-        minRating?: string;
-        yearRange?: {
-            min: string;
-            max: string;
-        };
-        additionalPreferences?: string;
-    };
-}
-
-interface MovieDetails {
-    id: number;
-    title: string;
-    overview: string;
-    runtime: number;
-    genres: Genre[];
-    credits: {
-        cast: CastMember[];
-        crew: CrewMember[];
-    };
-}
+import LoadingSkeleton from '@/components/LoadingSkeleton';
+import { Movie } from '@/types/movie';
 
 interface RecommendationListProps {
     recommendations: Movie[];
-    title?: string;
-    description?: string;
 }
 
-export default function RecommendationList({ recommendations, title = "Your Personalized Recommendations", description = "Curated movies based on your preferences" }: RecommendationListProps) {
+interface CastMember {
+    name: string;
+}
+
+interface Genre {
+    name: string;
+}
+
+interface CrewMember {
+    job: string;
+    name: string;
+}
+
+// Add a helper function to extract key info from preferences text
+const extractPreferenceKeywords = (preferences: string): string[] => {
+    if (!preferences) return [];
+
+    // Extract significant words from preferences (ignore common words)
+    const commonWords = ['and', 'or', 'the', 'with', 'in', 'on', 'a', 'an', 'for', 'to', 'of', 'from', 'by'];
+
+    return preferences
+        .toLowerCase()
+        .split(/[\s,.!?;:]+/)
+        .filter(word => word.length > 3 && !commonWords.includes(word))
+        .slice(0, 10); // Limit to 10 keywords for display
+};
+
+// Add this function to handle missing data more gracefully
+const getMovieDescription = (movie: Movie): string => {
+    return movie.description || "No description available.";
+};
+
+// Creating a simple card component
+const MovieCard = memo(({
+    movie,
+    onViewDetails,
+    onWishlistToggle,
+    isInWishlist
+}: {
+    movie: Movie;
+    onViewDetails: (movie: Movie) => void;
+    onWishlistToggle: (movie: Movie, e: React.MouseEvent) => void;
+    isInWishlist: boolean;
+}) => {
+    return (
+        <div className="flex-none w-[180px] sm:w-[200px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800 movie-card">
+            <div className="relative aspect-[2/3]">
+                {movie.posterPath ? (
+                    <img
+                        src={movie.posterPath}
+                        alt={movie.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : (
+                    <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                        <span className="text-gray-400">{movie.title}</span>
+                    </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+
+                {/* Rating badge */}
+                <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                    {movie.rating} ★
+                </div>
+
+                {/* Wishlist button */}
+                <button
+                    onClick={(e) => onWishlistToggle(movie, e)}
+                    className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill={isInWishlist ? "currentColor" : "none"}
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        style={{ color: isInWishlist ? '#ec4899' : 'white' }}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <div className="p-3">
+                <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
+                <div className="flex flex-wrap text-xs text-gray-400 mt-1">
+                    <span>{new Date(movie.releaseDate).getFullYear()}</span>
+                    {movie.genres && <span className="ml-2">{movie.genres}</span>}
+                </div>
+                <button
+                    onClick={() => onViewDetails(movie)}
+                    className="mt-3 w-full py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:from-blue-700 hover:to-purple-700 transition-all text-xs font-medium"
+                >
+                    View Details
+                </button>
+            </div>
+        </div>
+    );
+});
+
+export default function RecommendationList({ recommendations }: RecommendationListProps) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-    const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
+    const [movieDetails, setMovieDetails] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'info' as const });
 
     // Format runtime to hours and minutes
-    const formatRuntime = (minutes: number) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours}h ${mins}m`;
+    const formatRuntime = (runtime: number): string => {
+        const hours = Math.floor(runtime / 60);
+        const minutes = runtime % 60;
+        return `${hours}h ${minutes}m`;
     };
 
-    useEffect(() => {
-        if (selectedMovie && selectedMovie.id) {
-            setLoading(true);
-            // Try to get TMDB ID from the movie object or extract it from the ID
-            const tmdbId = selectedMovie.tmdbId ||
-                (selectedMovie.id.includes('tmdb-') ? selectedMovie.id.replace('tmdb-', '') : null);
-
-            if (tmdbId) {
-                fetch(`/api/movie-details?id=${tmdbId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        setMovieDetails(data);
-                        setLoading(false);
-                    })
-                    .catch(err => {
-                        console.error('Error fetching movie details:', err);
-                        setLoading(false);
-                    });
-            } else {
-                setLoading(false);
-            }
-        }
-    }, [selectedMovie]);
-
-    if (!recommendations.length) return null;
-
-    // Get the movie description (handle both 'description' and 'overview' properties)
-    const getMovieDescription = (movie: Movie) => {
-        return movie.description || movie.overview || '';
-    };
-
-    const handleWishlistToggle = (movie: Movie, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (isInWishlist(movie.id)) {
-            removeFromWishlist(movie.id);
-        } else {
-            addToWishlist({
-                id: movie.id,
-                title: movie.title,
-                poster_path: movie.posterPath || undefined,
-                release_date: movie.releaseDate,
-                vote_average: parseFloat(movie.rating || "0") || 0,
-                description: getMovieDescription(movie),
-                genres: movie.genres,
-                director: movie.director
-            });
-        }
-    };
-
+    // Function to handle viewing movie details
     const handleViewDetails = (movie: Movie) => {
         setSelectedMovie(movie);
-        setMovieDetails(null); // Reset movie details when selecting a new movie
+        setLoading(true);
+
+        // If we have a TMDB ID, fetch additional details
+        if (movie.tmdbId) {
+            fetchMovieDetails(movie.tmdbId);
+        } else {
+            // If no tmdbId, just show what we have without loading
+            setLoading(false);
+        }
     };
 
+    // Fetch additional movie details from TMDB if needed
+    const fetchMovieDetails = async (tmdbId: string) => {
+        try {
+            // Check if tmdbId is valid before making the API call
+            if (!tmdbId) {
+                setLoading(false);
+                return;
+            }
+
+            const response = await fetch(`/api/movie/${tmdbId}`);
+            const data = await response.json();
+            setMovieDetails(data);
+        } catch (error) {
+            console.error('Error fetching movie details:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Close the movie details modal
     const closeModal = () => {
         setSelectedMovie(null);
         setMovieDetails(null);
     };
 
+    // Handle escape key to close modal
+    useEffect(() => {
+        const handleEscapeKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && selectedMovie) {
+                closeModal();
+            }
+        };
+
+        window.addEventListener('keydown', handleEscapeKey);
+        return () => window.removeEventListener('keydown', handleEscapeKey);
+    }, [selectedMovie]);
+
+    if (loading) {
+        return <LoadingSkeleton />;
+    }
+
+    if (!recommendations.length) return null;
+
+    // Update the wishlist toggle function to highlight the selected movie
+    const handleWishlistToggle = (movie: Movie, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Identify the card element for highlight effect
+        const movieCard = e.currentTarget.closest('.movie-card');
+
+        if (isInWishlist(movie.id)) {
+            removeFromWishlist(movie.id);
+            setToast({
+                show: true,
+                message: `${movie.title} removed from wishlist`,
+                type: 'info'
+            });
+        } else {
+            addToWishlist({
+                id: movie.id,
+                title: movie.title,
+                posterPath: movie.posterPath,
+                releaseDate: movie.releaseDate || new Date().toISOString(),
+                description: getMovieDescription(movie),
+                rating: movie.rating || '?',
+                source: 'recommended'
+            });
+
+            // Add highlight effect to the card
+            if (movieCard) {
+                movieCard.classList.add('highlight-wishlist');
+                setTimeout(() => {
+                    movieCard.classList.remove('highlight-wishlist');
+                }, 1500);
+            }
+
+            setToast({
+                show: true,
+                message: `${movie.title} added to wishlist`,
+                type: 'info'
+            });
+        }
+    };
+
     return (
         <>
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">{title}</h2>
-                <p className="text-blue-200 text-sm font-light">{description}</p>
-            </div>
-
-            <div className="flex space-x-5 overflow-x-auto pb-6 scrollbar-hide">
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
                 {recommendations.map((movie, index) => (
-                    <div
+                    <MovieCard
                         key={`recommendation-${movie.id || index}`}
-                        className="flex-none w-[170px] sm:w-[190px] md:w-[210px] group relative overflow-hidden rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl transition-all duration-500 hover:shadow-cyan-500/20 hover:border-cyan-500/30"
-                    >
-                        <div className="relative aspect-[2/3] overflow-hidden">
-                            {movie.posterPath ? (
-                                <img
-                                    src={movie.posterPath}
-                                    alt={movie.title}
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                />
-                            ) : (
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-950 flex items-center justify-center">
-                                    <span className="text-blue-200 text-center px-4">{movie.title}</span>
-                                </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-transparent to-transparent opacity-90"></div>
-
-                            {/* Rating badge with new design */}
-                            <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-2 py-1 rounded-md text-xs font-medium shadow-lg">
-                                {movie.rating || "N/A"} ★
-                            </div>
-
-                            {/* Wishlist button with animation */}
-                            <button
-                                onClick={(e) => handleWishlistToggle(movie, e)}
-                                className="absolute top-2 right-2 p-1.5 bg-black/30 backdrop-blur-sm rounded-full hover:bg-black/50 transition-all duration-300 hover:scale-110"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 transition-colors duration-300"
-                                    fill={isInWishlist(movie.id) ? "currentColor" : "none"}
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                    style={{ color: isInWishlist(movie.id) ? '#ec4899' : 'white' }}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="p-4">
-                            <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
-                            <div className="flex flex-wrap text-xs text-blue-300 mt-1">
-                                <span>{new Date(movie.releaseDate).getFullYear()}</span>
-                                {movie.genres && (
-                                    <span className="ml-2 opacity-70">{movie.genres}</span>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={() => handleViewDetails(movie)}
-                                className="mt-3 w-full py-1.5 bg-gradient-to-r from-blue-500/80 to-cyan-400/80 backdrop-blur-sm text-white rounded-md hover:from-blue-500 hover:to-cyan-400 transition-all duration-300 text-xs font-medium shadow-sm shadow-cyan-500/20 hover:shadow-cyan-500/30"
-                            >
-                                View Details
-                            </button>
-                        </div>
-                    </div>
+                        movie={movie}
+                        onViewDetails={handleViewDetails}
+                        onWishlistToggle={handleWishlistToggle}
+                        isInWishlist={isInWishlist(movie.id)}
+                    />
                 ))}
             </div>
 
-            {/* Movie Details Modal with new design */}
+            {/* Movie Details Modal - Updated to match TrendingSection and fetch TMDB data */}
             {selectedMovie && (
-                <div className="fixed inset-0 bg-blue-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-gradient-to-br from-blue-900/90 to-slate-900/90 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl animate-scaleIn">
-                        <div className="p-8">
-                            <div className="flex justify-between items-start mb-8">
-                                <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">{selectedMovie.title}</h3>
+                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#1a1a1a] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-3xl font-bold">{selectedMovie.title}</h3>
                                 <button
                                     onClick={closeModal}
-                                    className="text-blue-300 hover:text-white text-2xl transition-colors"
+                                    className="text-gray-400 hover:text-white text-2xl"
                                 >
                                     ×
                                 </button>
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-10">
+                            <div className="flex flex-col md:flex-row gap-8">
                                 <div className="md:w-1/3">
-                                    <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 hover:border-cyan-500/30 transition-all duration-500">
-                                        {selectedMovie.posterPath ? (
-                                            <img
-                                                src={selectedMovie.posterPath}
-                                                alt={selectedMovie.title}
-                                                className="w-full h-auto"
-                                            />
-                                        ) : (
-                                            <div className="aspect-[2/3] bg-gradient-to-br from-blue-800 to-blue-950 flex items-center justify-center">
-                                                <span className="text-blue-200 text-center px-4">{selectedMovie.title}</span>
-                                            </div>
-                                        )}
+                                    <div className="rounded-lg overflow-hidden shadow-2xl">
+                                        <img
+                                            src={selectedMovie.posterPath || ''}
+                                            alt={selectedMovie.title}
+                                            className="w-full"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="md:w-2/3">
-                                    <div className="text-sm text-blue-200 mb-8 flex items-center gap-4 flex-wrap">
+                                    <div className="text-sm text-gray-400 mb-6 flex items-center gap-3 flex-wrap">
                                         {selectedMovie.rating && (
-                                            <span className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-3 py-1 rounded-md font-medium shadow-lg">
+                                            <span className="bg-blue-600 text-white px-2 py-1 rounded">
                                                 ★ {selectedMovie.rating}
                                             </span>
                                         )}
-                                        <span className="bg-blue-800/50 backdrop-blur-sm px-3 py-1 rounded-md">
-                                            {new Date(selectedMovie.releaseDate).getFullYear()}
-                                        </span>
+                                        <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
 
-                                        {movieDetails?.runtime && (
-                                            <span className="bg-blue-800/50 backdrop-blur-sm px-3 py-1 rounded-md">
-                                                {formatRuntime(movieDetails.runtime)}
-                                            </span>
-                                        )}
+                                        {/* Show runtime from API data if available */}
+                                        {movieDetails?.runtime ? (
+                                            <span>{formatRuntime(movieDetails.runtime)}</span>
+                                        ) : selectedMovie.runtime ? (
+                                            <span>{formatRuntime(selectedMovie.runtime)}</span>
+                                        ) : null}
 
-                                        {movieDetails?.genres && (
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {movieDetails.genres.map((g: Genre) => (
-                                                    <span key={g.id} className="bg-blue-800/30 backdrop-blur-sm px-2 py-0.5 rounded-md text-xs">
-                                                        {g.name}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {/* Show genres from API data if available */}
+                                        {movieDetails?.genres ? (
+                                            <span>{movieDetails.genres.map((g: Genre) => g.name).join(', ')}</span>
+                                        ) : selectedMovie.genres ? (
+                                            <span>{selectedMovie.genres}</span>
+                                        ) : null}
                                     </div>
 
                                     {/* Show overview from API data if available */}
-                                    {(movieDetails?.overview || getMovieDescription(selectedMovie)) && (
+                                    {(movieDetails?.overview || selectedMovie.description) && (
                                         <div className="mb-6">
                                             <h4 className="text-lg font-semibold mb-2">Overview</h4>
                                             <p className="text-gray-300 leading-relaxed">
-                                                {movieDetails?.overview || getMovieDescription(selectedMovie)}
+                                                {movieDetails?.overview || selectedMovie.description}
                                             </p>
                                         </div>
                                     )}
@@ -299,7 +304,7 @@ export default function RecommendationList({ recommendations, title = "Your Pers
                                         {movieDetails?.credits?.crew?.find((c: CrewMember) => c.job === 'Director')?.name ? (
                                             <p className="text-gray-300">
                                                 <span className="text-gray-400">Director: </span>
-                                                {movieDetails.credits.crew.find((c: CrewMember) => c.job === 'Director')!.name}
+                                                {movieDetails.credits.crew.find((c: CrewMember) => c.job === 'Director').name}
                                             </p>
                                         ) : selectedMovie.director ? (
                                             <p className="text-gray-300">
@@ -309,10 +314,10 @@ export default function RecommendationList({ recommendations, title = "Your Pers
                                         ) : null}
 
                                         {/* Show cast from API data if available */}
-                                        {movieDetails?.credits?.cast && movieDetails.credits.cast.length > 0 ? (
+                                        {movieDetails?.credits?.cast?.length > 0 ? (
                                             <p className="text-gray-300">
                                                 <span className="text-gray-400">Cast: </span>
-                                                {movieDetails?.credits?.cast.slice(0, 5).map((c: CastMember) => c.name).join(', ')}
+                                                {movieDetails.credits.cast.slice(0, 5).map((c: CastMember) => c.name).join(', ')}
                                             </p>
                                         ) : selectedMovie.cast ? (
                                             <p className="text-gray-300">
@@ -355,91 +360,12 @@ export default function RecommendationList({ recommendations, title = "Your Pers
                                             {isInWishlist(selectedMovie.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                                         </button>
                                     </div>
-
-                                    {/* Display match reason based on user preferences */}
-                                    {(selectedMovie.comparison || selectedMovie.requestedGenres || selectedMovie.preferenceDetails) && (
-                                        <div className="mt-8 p-4 bg-blue-800/20 backdrop-blur-sm rounded-lg border border-white/10">
-                                            <h4 className="text-lg font-semibold mb-3 text-cyan-300">Why We Recommended This</h4>
-                                            
-                                            {selectedMovie.comparison && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Similar to: </span>
-                                                    {selectedMovie.comparison}
-                                                </p>
-                                            )}
-                                            
-                                            {/* For single liked movie */}
-                                            {typeof selectedMovie.preferenceDetails?.basedOn === 'string' && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Based on your interest in: </span>
-                                                    {selectedMovie.preferenceDetails.basedOn}
-                                                </p>
-                                            )}
-                                            
-                                            {/* For multiple liked movies */}
-                                            {Array.isArray(selectedMovie.preferenceDetails?.basedOn) && selectedMovie.preferenceDetails?.basedOn.length > 0 && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Based on your interest in: </span>
-                                                    {selectedMovie.preferenceDetails.basedOn.join(', ')}
-                                                </p>
-                                            )}
-                                            
-                                            {selectedMovie.requestedGenres && selectedMovie.requestedGenres.length > 0 && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Matches your preferred genres: </span>
-                                                    {selectedMovie.requestedGenres.join(', ')}
-                                                </p>
-                                            )}
-                                            
-                                            {selectedMovie.preferenceDetails?.yearRange?.min && selectedMovie.preferenceDetails?.yearRange?.max && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Within your requested time period: </span>
-                                                    {selectedMovie.preferenceDetails.yearRange.min} - {selectedMovie.preferenceDetails.yearRange.max}
-                                                </p>
-                                            )}
-                                            
-                                            {selectedMovie.preferenceDetails?.additionalRequests && (
-                                                <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Includes your preferences: </span>
-                                                    {selectedMovie.preferenceDetails.additionalRequests}
-                                                </p>
-                                            )}
-                                            
-                                            {/* Display user preferences from the form */}
-                                            {selectedMovie.userPreferences?.additionalPreferences && (
-                                                <p className="text-blue-100">
-                                                    <span className="text-cyan-200 font-medium">Matching your request for: </span>
-                                                    {selectedMovie.userPreferences.additionalPreferences}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-            
-            <style jsx>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                
-                @keyframes scaleIn {
-                    from { transform: scale(0.95); opacity: 0; }
-                    to { transform: scale(1); opacity: 1; }
-                }
-                
-                .animate-fadeIn {
-                    animation: fadeIn 0.3s ease-out forwards;
-                }
-                
-                .animate-scaleIn {
-                    animation: scaleIn 0.3s ease-out forwards;
-                }
-            `}</style>
         </>
     );
 } 

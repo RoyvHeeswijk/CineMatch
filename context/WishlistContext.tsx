@@ -1,117 +1,91 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Movie = {
-  id: string;
-  title: string;
-  poster_path?: string;
-  release_date?: string;
-  vote_average?: number;
-  description?: string;
-  genres?: string;
-  director?: string;
-  provider?: string;
-};
-
-interface WishlistContextType {
-  wishlist: Movie[];
-  wishlistCount: number;
-  addToWishlist: (movie: Movie) => void;
-  removeFromWishlist: (id: string) => void;
-  isInWishlist: (id: string) => boolean;
-  clearWishlist: () => void;
+interface WishlistItem {
+    id: string;
+    title: string;
+    posterPath: string | null;
+    releaseDate: string;
+    description?: string;
+    rating?: string;
+    source?: 'trending' | 'recommended';
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+interface WishlistContextProps {
+    wishlist: WishlistItem[];
+    addToWishlist: (movie: WishlistItem) => void;
+    removeFromWishlist: (id: string) => void;
+    isInWishlist: (id: string) => boolean;
+    wishlistCount: number;
+    clearWishlist: () => void;
+}
+
+const WishlistContext = createContext<WishlistContextProps>({
+    wishlist: [],
+    addToWishlist: () => {},
+    removeFromWishlist: () => {},
+    isInWishlist: () => false,
+    wishlistCount: 0,
+    clearWishlist: () => {},
+});
+
+export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<Movie[]>([]);
+    const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+    const [wishlistCount, setWishlistCount] = useState(0);
 
-  // Load wishlist from localStorage on mount
-  useEffect(() => {
-    const savedWishlist = localStorage.getItem('movieWishlist');
-    if (savedWishlist) {
-      try {
-        const parsedWishlist = JSON.parse(savedWishlist);
-        // Ensure we're loading an array
-        if (Array.isArray(parsedWishlist)) {
-          setWishlist(parsedWishlist);
-        } else {
-          console.error('Saved wishlist is not an array, resetting');
-          setWishlist([]);
+    useEffect(() => {
+        // Load wishlist from localStorage on initial load
+        const storedWishlist = localStorage.getItem('wishlist');
+        if (storedWishlist) {
+            try {
+                const parsedWishlist = JSON.parse(storedWishlist);
+                setWishlist(parsedWishlist);
+                setWishlistCount(parsedWishlist.length);
+            } catch (error) {
+                console.error('Error parsing wishlist from localStorage:', error);
+            }
         }
-      } catch (e) {
-        console.error('Failed to parse wishlist from localStorage', e);
+    }, []);
+
+    useEffect(() => {
+        // Update localStorage whenever wishlist changes
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        setWishlistCount(wishlist.length);
+    }, [wishlist]);
+
+    const addToWishlist = (movie: WishlistItem) => {
+        if (!isInWishlist(movie.id)) {
+            const movieWithTimestamp = {
+                ...movie,
+                dateAdded: new Date().toISOString()
+            };
+            setWishlist(prev => [movieWithTimestamp, ...prev]);
+        }
+    };
+
+    const removeFromWishlist = (id: string) => {
+        setWishlist(prev => prev.filter(item => item.id !== id));
+    };
+
+    const isInWishlist = (id: string) => {
+        return wishlist.some(item => item.id === id);
+    };
+    
+    const clearWishlist = () => {
         setWishlist([]);
-      }
-    }
-  }, []);
+    };
 
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('movieWishlist', JSON.stringify(wishlist));
-    console.log('Wishlist updated:', wishlist);
-  }, [wishlist]);
-
-  // Use useCallback to ensure function identity is stable
-  const addToWishlist = useCallback((movie: Movie) => {
-    if (!movie.id) {
-      console.error('Cannot add movie without ID to wishlist:', movie);
-      return;
-    }
-    
-    setWishlist(prev => {
-      // Check if movie already exists in wishlist
-      if (prev.some(item => item.id === movie.id)) {
-        console.log('Movie already in wishlist:', movie.title);
-        return prev;
-      }
-      console.log('Adding to wishlist:', movie.title, 'ID:', movie.id);
-      // Create a new array with the new movie added
-      return [...prev, movie];
-    });
-  }, []);
-
-  const removeFromWishlist = useCallback((id: string) => {
-    if (!id) {
-      console.error('Cannot remove movie without ID from wishlist');
-      return;
-    }
-    
-    setWishlist(prev => {
-      console.log('Removing from wishlist, id:', id);
-      return prev.filter(movie => movie.id !== id);
-    });
-  }, []);
-
-  const isInWishlist = useCallback((id: string) => {
-    if (!id) return false;
-    return wishlist.some(movie => movie.id === id);
-  }, [wishlist]);
-
-  const clearWishlist = useCallback(() => {
-    setWishlist([]);
-  }, []);
-
-  return (
-    <WishlistContext.Provider 
-      value={{ 
-        wishlist, 
-        wishlistCount: wishlist.length,
-        addToWishlist, 
-        removeFromWishlist,
-        isInWishlist,
-        clearWishlist
-      }}
-    >
-      {children}
-    </WishlistContext.Provider>
-  );
-};
-
-export const useWishlist = () => {
-  const context = useContext(WishlistContext);
-  if (context === undefined) {
-    throw new Error('useWishlist must be used within a WishlistProvider');
-  }
-  return context;
+    return (
+        <WishlistContext.Provider value={{ 
+            wishlist, 
+            addToWishlist, 
+            removeFromWishlist, 
+            isInWishlist, 
+            wishlistCount,
+            clearWishlist 
+        }}>
+            {children}
+        </WishlistContext.Provider>
+    );
 };

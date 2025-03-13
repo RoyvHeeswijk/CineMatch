@@ -6,12 +6,24 @@ import Head from 'next/head';
 import WishlistButton from '@/components/WishlistButton';
 import { useWishlist } from '@/context/WishlistContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import Toast from '@/components/Toast';
+import WishlistModal from '@/components/WishlistModal';
 
 export default function Home() {
     const [recommendations, setRecommendations] = useState<any[]>([]);
     const [trendingMovies, setTrendingMovies] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { wishlistCount } = useWishlist();
+    const { wishlistCount, isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+    const [toast, setToast] = useState<{
+        show: boolean;
+        message: string;
+        type: 'success' | 'error' | 'info';
+    }>({
+        show: false,
+        message: '',
+        type: 'success'
+    });
+    const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
 
     useEffect(() => {
         // Fetch trending movies when the page loads
@@ -28,6 +40,48 @@ export default function Home() {
         }
     };
 
+    // Scroll to recommendations when they're loaded
+    useEffect(() => {
+        if (recommendations.length > 0) {
+            // Wait a bit for the DOM to update
+            setTimeout(() => {
+                const recommendationsSection = document.getElementById('recommendations-section');
+                if (recommendationsSection) {
+                    recommendationsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 300);
+        }
+    }, [recommendations]);
+
+    const handleWishlistToggle = (movie: any, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isInWishlist(movie.id)) {
+            removeFromWishlist(movie.id);
+            setToast({
+                show: true,
+                message: `${movie.title} removed from wishlist`,
+                type: 'info'
+            });
+        } else {
+            addToWishlist({
+                id: movie.id,
+                title: movie.title,
+                posterPath: movie.poster_path || movie.posterPath,
+                releaseDate: movie.release_date || movie.releaseDate,
+                description: movie.overview || movie.description,
+                rating: movie.vote_average?.toString() || movie.rating,
+                source: 'recommended'
+            });
+            setToast({
+                show: true,
+                message: `${movie.title} added to wishlist`,
+                type: 'success'
+            });
+        }
+    };
+
     return (
         <WishlistProvider>
             <Head>
@@ -39,97 +93,111 @@ export default function Home() {
             </Head>
 
             <main className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white font-['Inter']">
-                {/* Hero Section with 3D particles effect */}
+                {/* Background effects */}
                 <div className="absolute inset-0 overflow-hidden">
                     <div className="stars-container"></div>
                 </div>
 
-                {/* Blurry blue orbs for decorative background */}
                 <div className="fixed top-1/4 -left-40 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"></div>
                 <div className="fixed top-1/2 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
                 <div className="fixed bottom-1/4 left-1/3 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl"></div>
 
-                {/* Wishlist Button - Now floating with glass effect */}
-                <div className="fixed top-6 right-6 z-50">
-                    <div className="backdrop-blur-md bg-white/10 p-1 rounded-full border border-white/20 shadow-lg">
-                        <WishlistButton count={wishlistCount} />
-                    </div>
-                </div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
-                    {/* Header Section */}
-                    <div className="text-center mb-24">
-                        <div className="mb-4 flex justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-blue-400">
-                                <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
-                            </svg>
-                        </div>
-                        <h1 className="text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+                    {/* Header with logo and wishlist */}
+                    <div className="flex items-center justify-between mb-8">
+                        <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
                             CineMatch
                         </h1>
-                        <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-                            Discover your perfect movie match with personalized recommendations
-                        </p>
-                    </div>
-
-                    {/* Search Section - Now with glass morphism */}
-                    <div className="mb-32 max-w-3xl mx-auto backdrop-blur-xl bg-white/5 p-8 rounded-2xl shadow-xl border border-white/10">
-                        <h2 className="text-2xl font-semibold mb-8 text-center bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">Find Your Perfect Match</h2>
-                        <MovieForm setRecommendations={setRecommendations} setLoading={setLoading} />
-
-                        {loading && (
-                            <div className="text-center mt-12">
-                                <div className="animate-spin h-12 w-12 border-4 border-cyan-400 rounded-full border-t-transparent mx-auto opacity-75" />
-                                <p className="mt-6 text-blue-200 font-light">Finding your perfect movie matches...</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Content wrapper with subtle gradient background */}
-                    <div className="rounded-3xl bg-gradient-to-b from-blue-900/50 to-slate-900/50 backdrop-blur-sm border border-white/5 overflow-hidden shadow-2xl">
-                        {/* Recommendations Section */}
-                        {recommendations.length > 0 && (
-                            <div className="p-8 border-b border-white/10">
-                                <RecommendationList 
-                                    recommendations={recommendations} 
-                                    title="Your Personalized Recommendations"
-                                    description="Curated movies based on your preferences"
+                        <button
+                            onClick={() => setIsWishlistModalOpen(true)}
+                            className="relative flex items-center justify-center p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                 />
-                            </div>
-                        )}
+                            </svg>
+                            {wishlistCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-pink-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-xs">
+                                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
 
-                        {/* Trending Movies Section */}
-                        <div className="p-8">
-                            <TrendingSection
-                                title="Trending This Week"
-                                description="The movies everyone's talking about right now"
-                                items={trendingMovies}
-                                type="movies"
-                            />
+                    {/* Main content */}
+                    <div className="mt-8">
+                        <div className="lg:flex lg:gap-8">
+                            <div className="lg:w-1/3 mb-8 lg:mb-0">
+                                <div className="backdrop-blur-xl bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                                    <h2 className="text-xl font-bold mb-6 text-white flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        </svg>
+                                        Find Your Perfect Movie
+                                    </h2>
+                                    <MovieForm setRecommendations={setRecommendations} setLoading={setLoading} />
+                                </div>
+                            </div>
+
+                            <div className="lg:w-2/3 space-y-8">
+                                {/* Recommendations Section with Clear Heading */}
+                                <div id="recommendations-section" className="scroll-mt-16">
+                                    {recommendations.length > 0 ? (
+                                        <div className="backdrop-blur-xl bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                                            <div className="flex items-center mb-6">
+                                                <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg px-3 py-1 text-white text-sm font-semibold mr-3">
+                                                    RECOMMENDED
+                                                </div>
+                                                <h2 className="text-xl md:text-2xl font-bold text-white">Your Personalized Recommendations</h2>
+                                            </div>
+                                            <RecommendationList recommendations={recommendations} />
+                                        </div>
+                                    ) : !loading && (
+                                        <div className="backdrop-blur-xl bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                                            <div className="text-center py-10">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-400 mb-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                                </svg>
+                                                <h3 className="text-xl font-medium text-blue-200 mb-2">Discover Your Perfect Movie Match</h3>
+                                                <p className="text-blue-300/70 max-w-md mx-auto">
+                                                    Tell us what you like, and we'll recommend movies tailored just for you.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Trending Section with Clear Heading */}
+                                <div className="backdrop-blur-xl bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                                    <TrendingSection
+                                        title="Top 10 Movies This Week"
+                                        description="Most popular movies right now"
+                                        items={trendingMovies.slice(0, 10)}
+                                        type="movies"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Footer with glass effect */}
-                    <footer className="relative z-10 text-center py-12 mt-24 backdrop-blur-md bg-white/5 rounded-xl border border-white/10">
-                        <div className="max-w-7xl mx-auto px-4">
-                            <div className="mb-6">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-blue-400 mx-auto">
-                                    <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
-                                </svg>
-                            </div>
-                            <p className="text-blue-200 text-sm">© {new Date().getFullYear()} CineMatch. All rights reserved.</p>
-                            <div className="mt-6 flex justify-center space-x-8">
-                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">About</a>
-                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Privacy</a>
-                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Terms</a>
-                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Contact</a>
-                            </div>
-                        </div>
+                    {/* Footer */}
+                    <footer className="text-center text-blue-300/50 py-6">
+                        <p>© {new Date().getFullYear()} CineMatch • Powered by TMDB & OpenAI</p>
                     </footer>
                 </div>
             </main>
 
-            {/* Add custom animation styles */}
+            {/* Styles */}
             <style jsx global>{`
                 body {
                     margin: 0;
@@ -173,7 +241,52 @@ export default function Home() {
                         background-position: 400px 400px;
                     }
                 }
+                
+                /* Add fade-in animation for recommendations */
+                .fade-in {
+                    animation: fadeIn 0.5s ease-out forwards;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                /* Add these animations to your global styles */
+                @keyframes slideIn {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+
+                @keyframes pulseHighlight {
+                    0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+                    70% { box-shadow: 0 0 0 10px rgba(236, 72, 153, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+                }
+
+                .animate-slideIn {
+                    animation: slideIn 0.3s ease-out forwards;
+                }
+
+                .highlight-wishlist {
+                    animation: pulseHighlight 1.5s cubic-bezier(0.4, 0, 0.6, 1) 1;
+                }
             `}</style>
+
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(prev => ({ ...prev, show: false }))}
+                />
+            )}
+
+            {isWishlistModalOpen && (
+                <WishlistModal
+                    isOpen={isWishlistModalOpen}
+                    onClose={() => setIsWishlistModalOpen(false)}
+                />
+            )}
         </WishlistProvider>
     );
 }
