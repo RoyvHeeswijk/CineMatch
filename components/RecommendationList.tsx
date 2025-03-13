@@ -368,10 +368,33 @@ export default function RecommendationList({ recommendations, title = "Your Pers
                                                 </p>
                                             )}
                                             
-                                            {selectedMovie.requestedGenres && (
+                                            {/* For single liked movie */}
+                                            {typeof selectedMovie.preferenceDetails?.basedOn === 'string' && (
                                                 <p className="text-blue-100 mb-2">
-                                                    <span className="text-cyan-200 font-medium">Matches your genre preference: </span>
+                                                    <span className="text-cyan-200 font-medium">Based on your interest in: </span>
+                                                    {selectedMovie.preferenceDetails.basedOn}
+                                                </p>
+                                            )}
+                                            
+                                            {/* For multiple liked movies */}
+                                            {Array.isArray(selectedMovie.preferenceDetails?.basedOn) && selectedMovie.preferenceDetails?.basedOn.length > 0 && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Based on your interest in: </span>
+                                                    {selectedMovie.preferenceDetails.basedOn.join(', ')}
+                                                </p>
+                                            )}
+                                            
+                                            {selectedMovie.requestedGenres && selectedMovie.requestedGenres.length > 0 && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Matches your preferred genres: </span>
                                                     {selectedMovie.requestedGenres.join(', ')}
+                                                </p>
+                                            )}
+                                            
+                                            {selectedMovie.preferenceDetails?.yearRange?.min && selectedMovie.preferenceDetails?.yearRange?.max && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Within your requested time period: </span>
+                                                    {selectedMovie.preferenceDetails.yearRange.min} - {selectedMovie.preferenceDetails.yearRange.max}
                                                 </p>
                                             )}
                                             
@@ -382,6 +405,7 @@ export default function RecommendationList({ recommendations, title = "Your Pers
                                                 </p>
                                             )}
                                             
+                                            {/* Display user preferences from the form */}
                                             {selectedMovie.userPreferences?.additionalPreferences && (
                                                 <p className="text-blue-100">
                                                     <span className="text-cyan-200 font-medium">Matching your request for: </span>
