@@ -38,6 +38,19 @@ interface Movie {
     cast?: string;
     comparison?: string;
     tmdbId?: string;
+    requestedGenre?: string;
+    preferenceDetails?: {
+        basedOn?: string;
+        minRating?: string;
+        maxYear?: string;
+        additionalRequests?: string;
+    };
+    userPreferences?: {
+        requestedGenre?: string;
+        minRating?: string;
+        maxYear?: string;
+        additionalPreferences?: string;
+    };
 }
 
 interface MovieDetails {

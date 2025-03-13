@@ -79,86 +79,102 @@ export default async function handler(
     res: NextApiResponse
 ) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { preferences } = req.body;
+        const { 
+            likedMovies, 
+            selectedGenres, 
+            minRating, 
+            minYear,
+            maxYear, 
+            additionalPreferences 
+        } = req.body;
 
-        // Get movie suggestions from OpenAI
+        if (!likedMovies || likedMovies.length === 0) {
+            return res.status(400).json({ error: 'At least one movie is required' });
+        }
+
+        // Build a prompt that incorporates all user preferences
+        let prompt = `Recommend 5 movies`;
+        
+        // Add liked movies to the prompt
+        if (likedMovies.length === 1) {
+            prompt += ` similar to "${likedMovies[0]}"`;
+        } else {
+            prompt += ` for someone who likes ${likedMovies.map((m: string) => `"${m}"`).join(', ')}`;
+        }
+        
+        // Add genre preferences if provided
+        if (selectedGenres && selectedGenres.length > 0) {
+            if (selectedGenres.length === 1) {
+                prompt += ` in the ${selectedGenres[0]} genre`;
+            } else {
+                const lastGenre = selectedGenres.pop();
+                prompt += ` in the ${selectedGenres.join(', ')} and ${lastGenre} genres`;
+                // Put the genre back for the response
+                selectedGenres.push(lastGenre);
+            }
+        }
+        
+        // Add rating and year filters
+        if (minRating && minRating !== '0') {
+            prompt += ` with a minimum rating of ${minRating}/10`;
+        }
+        
+        if (minYear || maxYear) {
+            prompt += ` released`;
+            if (minYear) prompt += ` after ${minYear}`;
+            if (minYear && maxYear) prompt += ` and`;
+            if (maxYear) prompt += ` before or during ${maxYear}`;
+        }
+        
+        // Add any additional preferences
+        if (additionalPreferences) {
+            prompt += `. Additional preferences: ${additionalPreferences}`;
+        }
+        
+        prompt += `. For each movie, provide the title, a brief description, release year, TMDB ID if available, director, cast, genres, and an estimated rating out of 10. Also explain why this movie would be a good match based on my preferences.`;
+
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
-                {
-                    role: "system",
-                    content: "You are a movie recommendation expert. Suggest exactly 10 well-known movies based on the user's preferences. Include a mix of classic and modern films. Return ONLY the movie titles separated by commas, nothing else."
-                },
-                {
-                    role: "user",
-                    content: `Suggest movies similar to these preferences: ${preferences}`
-                }
+                { role: "system", content: "You are a helpful movie recommendation assistant. Provide detailed, accurate recommendations based on user preferences. Format your response as JSON." },
+                { role: "user", content: prompt }
             ],
-            temperature: 0.7,
+            response_format: { type: "json_object" },
         });
 
-        const movieTitles = completion.choices[0].message.content?.split(',').map(title => title.trim()) || [];
-        console.log('Suggested titles:', movieTitles);
+        const responseContent = completion.choices[0].message.content;
+        let recommendations;
 
-        // Get movie details
-        let recommendations = [];
-        for (const title of movieTitles) {
-            const movie = await searchMovie(title);
-            if (movie) {
-                recommendations.push(movie);
-            }
-
-            // Break if we have 10 movies
-            if (recommendations.length === 10) break;
-        }
-
-        // If we don't have enough recommendations, get popular movies
-        if (recommendations.length < 10) {
-            const popularResponse = await axios.get(`${TMDB_API_BASE}/movie/popular`, {
-                params: {
-                    api_key: process.env.TMDB_API_KEY,
-                    language: 'en-US',
-                    page: 1
+        try {
+            // Parse the JSON response
+            const parsedResponse = JSON.parse(responseContent || '{}');
+            recommendations = parsedResponse.recommendations || [];
+            
+            // Enhance the recommendations with the user's preferences
+            recommendations = recommendations.map((movie: any) => ({
+                ...movie,
+                // Add additional data based on user input
+                requestedGenres: selectedGenres,
+                preferenceDetails: {
+                    basedOn: likedMovies,
+                    minRating: minRating,
+                    yearRange: { min: minYear, max: maxYear },
+                    additionalRequests: additionalPreferences || undefined
                 }
-            });
-
-            const popularMovies = popularResponse.data.results;
-            for (const movie of popularMovies) {
-                if (recommendations.length >= 10) break;
-
-                const details = await getMovieDetails(movie.id);
-                if (details) {
-                    const hours = Math.floor(details.runtime / 60);
-                    const minutes = details.runtime % 60;
-
-                    recommendations.push({
-                        title: movie.title,
-                        description: movie.overview,
-                        posterPath: movie.poster_path
-                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                            : null,
-                        releaseDate: movie.release_date,
-                        runtime: details.runtime,
-                        formattedRuntime: `${hours}h ${minutes}m`,
-                        rating: details.vote_average.toFixed(1),
-                        genres: details.genres.map((g: any) => g.name).join(', '),
-                        director: details.credits.crew.find((c: any) => c.job === 'Director')?.name || 'Unknown',
-                        cast: details.credits.cast.slice(0, 3).map((actor: any) => actor.name).join(', ')
-                    });
-                }
-            }
+            }));
+            
+        } catch (error) {
+            console.error('Error parsing AI response:', error);
+            recommendations = [];
         }
 
         return res.status(200).json({ recommendations });
     } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).json({
-            error: 'Failed to get recommendations',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        });
+        console.error('Error generating recommendations:', error);
+        return res.status(500).json({ error: 'Failed to generate recommendations' });
     }
 } 

@@ -5,31 +5,36 @@ interface WishlistButtonProps {
   count: number;
 }
 
-const WishlistButton: React.FC<WishlistButtonProps> = ({ count }) => {
+export default function WishlistButton({ count }: WishlistButtonProps) {
   return (
     <Link href="/wishlist">
-      <span className="relative flex items-center justify-center p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 group cursor-pointer">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          className="h-6 w-6 text-white" 
-          fill="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-        
-        {count > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-            {count}
-          </span>
-        )}
-        
-        <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/80 text-white text-sm py-1 px-2 rounded-md -bottom-8 whitespace-nowrap">
+      <div className="relative group cursor-pointer">
+        <div className="p-2 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-cyan-300 transition-colors duration-300 group-hover:text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+          
+          {count > 0 && (
+            <div className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-blue-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow-lg">
+              {count}
+            </div>
+          )}
+        </div>
+        <span className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-blue-800/80 backdrop-blur-sm text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap border border-white/10">
           My Wishlist
         </span>
-      </span>
+      </div>
     </Link>
   );
-};
-
-export default WishlistButton;
+}

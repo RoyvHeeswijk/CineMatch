@@ -24,8 +24,8 @@ interface CrewMember {
 interface Movie {
     id: string;
     title: string;
-    description?: string;  // Recommendation list uses description
-    overview?: string;     // Trending section uses overview
+    description?: string;
+    overview?: string;
     posterPath: string | null;
     releaseDate: string;
     runtime?: number;
@@ -35,6 +35,26 @@ interface Movie {
     comparison?: string;
     cast?: string;
     tmdbId?: string;
+    requestedGenres?: string[];
+    preferenceDetails?: {
+        basedOn: string | string[];
+        minRating: string;
+        yearRange?: {
+            min: string;
+            max: string;
+        };
+        additionalRequests?: string;
+    };
+    userPreferences?: {
+        likedMovies?: string[];
+        requestedGenres?: string[];
+        minRating?: string;
+        yearRange?: {
+            min: string;
+            max: string;
+        };
+        additionalPreferences?: string;
+    };
 }
 
 interface MovieDetails {
@@ -55,7 +75,7 @@ interface RecommendationListProps {
     description?: string;
 }
 
-export default function RecommendationList({ recommendations, title = "Your Recommended Movies", description = "Based on your preferences, here are some movies you might enjoy." }: RecommendationListProps) {
+export default function RecommendationList({ recommendations, title = "Your Personalized Recommendations", description = "Curated movies based on your preferences" }: RecommendationListProps) {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
@@ -131,44 +151,44 @@ export default function RecommendationList({ recommendations, title = "Your Reco
 
     return (
         <>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-                <p className="text-gray-400 text-sm">{description}</p>
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-2 bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">{title}</h2>
+                <p className="text-blue-200 text-sm font-light">{description}</p>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="flex space-x-5 overflow-x-auto pb-6 scrollbar-hide">
                 {recommendations.map((movie, index) => (
                     <div
                         key={`recommendation-${movie.id || index}`}
-                        className="flex-none w-[180px] sm:w-[200px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800"
+                        className="flex-none w-[170px] sm:w-[190px] md:w-[210px] group relative overflow-hidden rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl transition-all duration-500 hover:shadow-cyan-500/20 hover:border-cyan-500/30"
                     >
-                        <div className="relative aspect-[2/3]">
+                        <div className="relative aspect-[2/3] overflow-hidden">
                             {movie.posterPath ? (
                                 <img
                                     src={movie.posterPath}
                                     alt={movie.title}
-                                    className="absolute inset-0 w-full h-full object-cover"
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                 />
                             ) : (
-                                <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-                                    <span className="text-gray-400">{movie.title}</span>
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-950 flex items-center justify-center">
+                                    <span className="text-blue-200 text-center px-4">{movie.title}</span>
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-transparent to-transparent opacity-90"></div>
 
-                            {/* Rating badge - styled like in the screenshot */}
-                            <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                            {/* Rating badge with new design */}
+                            <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-2 py-1 rounded-md text-xs font-medium shadow-lg">
                                 {movie.rating || "N/A"} ★
                             </div>
 
-                            {/* Wishlist button */}
+                            {/* Wishlist button with animation */}
                             <button
                                 onClick={(e) => handleWishlistToggle(movie, e)}
-                                className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+                                className="absolute top-2 right-2 p-1.5 bg-black/30 backdrop-blur-sm rounded-full hover:bg-black/50 transition-all duration-300 hover:scale-110"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4"
+                                    className="h-4 w-4 transition-colors duration-300"
                                     fill={isInWishlist(movie.id) ? "currentColor" : "none"}
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -184,18 +204,18 @@ export default function RecommendationList({ recommendations, title = "Your Reco
                             </button>
                         </div>
 
-                        <div className="p-3">
+                        <div className="p-4">
                             <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
-                            <div className="flex flex-wrap text-xs text-gray-400 mt-1">
+                            <div className="flex flex-wrap text-xs text-blue-300 mt-1">
                                 <span>{new Date(movie.releaseDate).getFullYear()}</span>
                                 {movie.genres && (
-                                    <span className="ml-2">{movie.genres}</span>
+                                    <span className="ml-2 opacity-70">{movie.genres}</span>
                                 )}
                             </div>
 
                             <button
                                 onClick={() => handleViewDetails(movie)}
-                                className="mt-3 w-full py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:from-blue-700 hover:to-purple-700 transition-all text-xs font-medium"
+                                className="mt-3 w-full py-1.5 bg-gradient-to-r from-blue-500/80 to-cyan-400/80 backdrop-blur-sm text-white rounded-md hover:from-blue-500 hover:to-cyan-400 transition-all duration-300 text-xs font-medium shadow-sm shadow-cyan-500/20 hover:shadow-cyan-500/30"
                             >
                                 View Details
                             </button>
@@ -204,54 +224,64 @@ export default function RecommendationList({ recommendations, title = "Your Reco
                 ))}
             </div>
 
-            {/* Movie Details Modal - Updated to match TrendingSection and fetch TMDB data */}
+            {/* Movie Details Modal with new design */}
             {selectedMovie && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1a1a1a] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-3xl font-bold">{selectedMovie.title}</h3>
+                <div className="fixed inset-0 bg-blue-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-gradient-to-br from-blue-900/90 to-slate-900/90 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl animate-scaleIn">
+                        <div className="p-8">
+                            <div className="flex justify-between items-start mb-8">
+                                <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">{selectedMovie.title}</h3>
                                 <button
                                     onClick={closeModal}
-                                    className="text-gray-400 hover:text-white text-2xl"
+                                    className="text-blue-300 hover:text-white text-2xl transition-colors"
                                 >
                                     ×
                                 </button>
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-8">
+                            <div className="flex flex-col md:flex-row gap-10">
                                 <div className="md:w-1/3">
-                                    <div className="rounded-lg overflow-hidden shadow-2xl">
-                                        <img
-                                            src={selectedMovie.posterPath || ''}
-                                            alt={selectedMovie.title}
-                                            className="w-full"
-                                        />
+                                    <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 hover:border-cyan-500/30 transition-all duration-500">
+                                        {selectedMovie.posterPath ? (
+                                            <img
+                                                src={selectedMovie.posterPath}
+                                                alt={selectedMovie.title}
+                                                className="w-full h-auto"
+                                            />
+                                        ) : (
+                                            <div className="aspect-[2/3] bg-gradient-to-br from-blue-800 to-blue-950 flex items-center justify-center">
+                                                <span className="text-blue-200 text-center px-4">{selectedMovie.title}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="md:w-2/3">
-                                    <div className="text-sm text-gray-400 mb-6 flex items-center gap-3 flex-wrap">
+                                    <div className="text-sm text-blue-200 mb-8 flex items-center gap-4 flex-wrap">
                                         {selectedMovie.rating && (
-                                            <span className="bg-blue-600 text-white px-2 py-1 rounded">
+                                            <span className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-3 py-1 rounded-md font-medium shadow-lg">
                                                 ★ {selectedMovie.rating}
                                             </span>
                                         )}
-                                        <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
+                                        <span className="bg-blue-800/50 backdrop-blur-sm px-3 py-1 rounded-md">
+                                            {new Date(selectedMovie.releaseDate).getFullYear()}
+                                        </span>
 
-                                        {/* Show runtime from API data if available */}
-                                        {movieDetails?.runtime ? (
-                                            <span>{formatRuntime(movieDetails.runtime)}</span>
-                                        ) : selectedMovie.runtime ? (
-                                            <span>{formatRuntime(selectedMovie.runtime)}</span>
-                                        ) : null}
+                                        {movieDetails?.runtime && (
+                                            <span className="bg-blue-800/50 backdrop-blur-sm px-3 py-1 rounded-md">
+                                                {formatRuntime(movieDetails.runtime)}
+                                            </span>
+                                        )}
 
-                                        {/* Show genres from API data if available */}
-                                        {movieDetails?.genres ? (
-                                            <span>{movieDetails.genres.map((g: Genre) => g.name).join(', ')}</span>
-                                        ) : selectedMovie.genres ? (
-                                            <span>{selectedMovie.genres}</span>
-                                        ) : null}
+                                        {movieDetails?.genres && (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {movieDetails.genres.map((g: Genre) => (
+                                                    <span key={g.id} className="bg-blue-800/30 backdrop-blur-sm px-2 py-0.5 rounded-md text-xs">
+                                                        {g.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Show overview from API data if available */}
@@ -325,12 +355,67 @@ export default function RecommendationList({ recommendations, title = "Your Reco
                                             {isInWishlist(selectedMovie.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                                         </button>
                                     </div>
+
+                                    {/* Display match reason based on user preferences */}
+                                    {(selectedMovie.comparison || selectedMovie.requestedGenres || selectedMovie.preferenceDetails) && (
+                                        <div className="mt-8 p-4 bg-blue-800/20 backdrop-blur-sm rounded-lg border border-white/10">
+                                            <h4 className="text-lg font-semibold mb-3 text-cyan-300">Why We Recommended This</h4>
+                                            
+                                            {selectedMovie.comparison && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Similar to: </span>
+                                                    {selectedMovie.comparison}
+                                                </p>
+                                            )}
+                                            
+                                            {selectedMovie.requestedGenres && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Matches your genre preference: </span>
+                                                    {selectedMovie.requestedGenres.join(', ')}
+                                                </p>
+                                            )}
+                                            
+                                            {selectedMovie.preferenceDetails?.additionalRequests && (
+                                                <p className="text-blue-100 mb-2">
+                                                    <span className="text-cyan-200 font-medium">Includes your preferences: </span>
+                                                    {selectedMovie.preferenceDetails.additionalRequests}
+                                                </p>
+                                            )}
+                                            
+                                            {selectedMovie.userPreferences?.additionalPreferences && (
+                                                <p className="text-blue-100">
+                                                    <span className="text-cyan-200 font-medium">Matching your request for: </span>
+                                                    {selectedMovie.userPreferences.additionalPreferences}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+            
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes scaleIn {
+                    from { transform: scale(0.95); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                
+                .animate-fadeIn {
+                    animation: fadeIn 0.3s ease-out forwards;
+                }
+                
+                .animate-scaleIn {
+                    animation: scaleIn 0.3s ease-out forwards;
+                }
+            `}</style>
         </>
     );
 } 

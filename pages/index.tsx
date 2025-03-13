@@ -31,105 +31,147 @@ export default function Home() {
     return (
         <WishlistProvider>
             <Head>
-                <title>Movie Recommender</title>
-                <meta name="description" content="Find your next favorite movie" />
+                <title>CineMatch | Find Your Next Favorite Movie</title>
+                <meta name="description" content="Discover movies tailored to your taste" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
             </Head>
 
-            <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-black text-white font-['Montserrat']">
-                {/* Background overlay */}
-                <div className="absolute inset-0 bg-[url('/images/cinema-pattern.png')] opacity-5 z-0"></div>
+            <main className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white font-['Inter']">
+                {/* Hero Section with 3D particles effect */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <div className="stars-container"></div>
+                </div>
 
-                {/* Wishlist Button */}
+                {/* Blurry blue orbs for decorative background */}
+                <div className="fixed top-1/4 -left-40 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"></div>
+                <div className="fixed top-1/2 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl"></div>
+                <div className="fixed bottom-1/4 left-1/3 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl"></div>
+
+                {/* Wishlist Button - Now floating with glass effect */}
                 <div className="fixed top-6 right-6 z-50">
-                    <WishlistButton count={wishlistCount} />
+                    <div className="backdrop-blur-md bg-white/10 p-1 rounded-full border border-white/20 shadow-lg">
+                        <WishlistButton count={wishlistCount} />
+                    </div>
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
                     {/* Header Section */}
-                    <div className="text-center mb-16">
-                        <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                            Movie Recommender
+                    <div className="text-center mb-24">
+                        <div className="mb-4 flex justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-blue-400">
+                                <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+                            CineMatch
                         </h1>
-                        <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                            Discover your next favorite film based on your preferences
+                        <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+                            Discover your perfect movie match with personalized recommendations
                         </p>
                     </div>
 
-                    {/* Search Section */}
-                    <div className="mb-20 max-w-2xl mx-auto backdrop-blur-sm bg-black/30 p-8 rounded-xl shadow-2xl border border-gray-800">
-                        <h2 className="text-2xl font-semibold mb-6">Find Movies For You</h2>
+                    {/* Search Section - Now with glass morphism */}
+                    <div className="mb-32 max-w-3xl mx-auto backdrop-blur-xl bg-white/5 p-8 rounded-2xl shadow-xl border border-white/10">
+                        <h2 className="text-2xl font-semibold mb-8 text-center bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">Find Your Perfect Match</h2>
                         <MovieForm setRecommendations={setRecommendations} setLoading={setLoading} />
 
                         {loading && (
-                            <div className="text-center mt-8">
-                                <div className="animate-spin h-10 w-10 border-4 border-purple-500 rounded-full border-t-transparent mx-auto" />
-                                <p className="mt-4 text-gray-400">Finding perfect matches for you...</p>
+                            <div className="text-center mt-12">
+                                <div className="animate-spin h-12 w-12 border-4 border-cyan-400 rounded-full border-t-transparent mx-auto opacity-75" />
+                                <p className="mt-6 text-blue-200 font-light">Finding your perfect movie matches...</p>
                             </div>
                         )}
                     </div>
 
-                    {/* Recommendations Section */}
-                    {recommendations.length > 0 && (
-                        <div className="mb-20 backdrop-blur-sm bg-black/30 p-8 rounded-xl border border-gray-800 shadow-xl">
-                            <RecommendationList 
-                                recommendations={recommendations} 
-                                title="Your Recommended Movies"
-                                description="Based on your preferences, here are some movies you might enjoy."
+                    {/* Content wrapper with subtle gradient background */}
+                    <div className="rounded-3xl bg-gradient-to-b from-blue-900/50 to-slate-900/50 backdrop-blur-sm border border-white/5 overflow-hidden shadow-2xl">
+                        {/* Recommendations Section */}
+                        {recommendations.length > 0 && (
+                            <div className="p-8 border-b border-white/10">
+                                <RecommendationList 
+                                    recommendations={recommendations} 
+                                    title="Your Personalized Recommendations"
+                                    description="Curated movies based on your preferences"
+                                />
+                            </div>
+                        )}
+
+                        {/* Trending Movies Section */}
+                        <div className="p-8">
+                            <TrendingSection
+                                title="Trending This Week"
+                                description="The movies everyone's talking about right now"
+                                items={trendingMovies}
+                                type="movies"
                             />
                         </div>
-                    )}
-
-                    {/* Trending Movies Section */}
-                    <div className="backdrop-blur-sm bg-black/30 p-8 rounded-xl border border-gray-800 shadow-xl">
-                        <TrendingSection
-                            title="Top 10 movies this week"
-                            description="Check out this week's most popular movies and find out where to watch them."
-                            items={trendingMovies}
-                            type="movies"
-                        />
                     </div>
-                </div>
 
-                {/* Footer */}
-                <footer className="relative z-10 text-center py-10 text-gray-400 text-sm border-t border-gray-800 mt-20">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <p>© {new Date().getFullYear()} Movie Recommender. Find your perfect movie match.</p>
-                        <div className="mt-4 flex justify-center space-x-6">
-                            <a href="#" className="hover:text-white transition-colors">About</a>
-                            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                            <a href="#" className="hover:text-white transition-colors">Terms</a>
-                            <a href="#" className="hover:text-white transition-colors">Contact</a>
+                    {/* Footer with glass effect */}
+                    <footer className="relative z-10 text-center py-12 mt-24 backdrop-blur-md bg-white/5 rounded-xl border border-white/10">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-blue-400 mx-auto">
+                                    <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+                                </svg>
+                            </div>
+                            <p className="text-blue-200 text-sm">© {new Date().getFullYear()} CineMatch. All rights reserved.</p>
+                            <div className="mt-6 flex justify-center space-x-8">
+                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">About</a>
+                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Privacy</a>
+                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Terms</a>
+                                <a href="#" className="text-blue-300 hover:text-cyan-300 transition-colors text-sm">Contact</a>
+                            </div>
                         </div>
-                    </div>
-                </footer>
+                    </footer>
+                </div>
             </main>
 
+            {/* Add custom animation styles */}
             <style jsx global>{`
                 body {
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
+                    overflow-x: hidden;
                 }
+                
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                 }
+                
                 .scrollbar-hide {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
-                @keyframes pulse {
-                    0%, 100% {
-                        opacity: 1;
-                    }
-                    50% {
-                        opacity: 0.5;
-                    }
+                
+                /* Stars animation */
+                .stars-container {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background-image: 
+                        radial-gradient(2px 2px at 20px 30px, #ffffff15, transparent),
+                        radial-gradient(2px 2px at 40px 70px, #ffffff10, transparent),
+                        radial-gradient(2px 2px at 50px 160px, #ffffff15, transparent),
+                        radial-gradient(2px 2px at 90px 40px, #ffffff10, transparent),
+                        radial-gradient(2px 2px at 130px 80px, #ffffff15, transparent),
+                        radial-gradient(2px 2px at 160px 120px, #ffffff10, transparent);
+                    background-repeat: repeat;
+                    background-size: 200px 200px;
+                    opacity: 0.5;
+                    animation: stars-move 100s linear infinite;
                 }
-                .animate-pulse {
-                    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                
+                @keyframes stars-move {
+                    0% {
+                        background-position: 0 0;
+                    }
+                    100% {
+                        background-position: 400px 400px;
+                    }
                 }
             `}</style>
         </WishlistProvider>
