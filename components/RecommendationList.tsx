@@ -240,23 +240,23 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                     <span className="text-sm px-4 text-center">{movie.title}</span>
                                 </div>
                             )}
-                            
+
                             {/* Overlay with gradient for better readability */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            
+
                             {/* Rating badge */}
                             {movie.rating && (
                                 <div className="absolute top-2 left-2 bg-yellow-600/80 text-white px-2 py-0.5 rounded text-xs">
                                     ★ {movie.rating}
                                 </div>
                             )}
-                            
+
                             {/* Like Button */}
                             <button
                                 className={`absolute top-2 right-2 p-1.5 rounded-full ${isInWishlist(movie.id)
                                     ? 'bg-pink-600 text-white'
                                     : 'bg-black/50 text-white/70 hover:text-white'
-                                }`}
+                                    }`}
                                 onClick={(e) => handleLikeToggle(movie, e)}
                                 aria-label={isInWishlist(movie.id) ? "Unlike" : "Like"}
                             >
@@ -265,7 +265,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                 </svg>
                             </button>
                         </div>
-                        
+
                         {/* Movie info */}
                         <div className="p-3 flex-1 flex flex-col">
                             <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
@@ -294,13 +294,13 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
 
             {/* Full-screen movie details modal */}
             {selectedMovie && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
-                    <div 
-                        className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn backdrop-blur-lg"
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
+                    <div
+                        className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close button */}
-                        <button 
+                        <button
                             className="absolute top-4 right-4 text-white/80 hover:text-white z-20 bg-black/30 rounded-full p-2"
                             onClick={() => setSelectedMovie(null)}
                         >
@@ -308,7 +308,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
-                        
+
                         <div className="flex flex-col md:flex-row">
                             {/* Movie poster */}
                             <div className="w-full md:w-1/3 relative h-80 md:h-auto">
@@ -326,7 +326,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Content */}
                             <div className="p-6 md:p-8 flex-1">
                                 <div className="flex items-center justify-between">
@@ -339,7 +339,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 <div className="flex items-center text-blue-300 text-sm space-x-3 mt-1 mb-6">
                                     <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
                                     {movieDetails?.runtime && (
@@ -355,7 +355,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         </>
                                     )}
                                 </div>
-                                
+
                                 {/* Genre tags */}
                                 {movieDetails?.genres && (
                                     <div className="flex flex-wrap gap-2 mb-6">
@@ -366,7 +366,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         ))}
                                     </div>
                                 )}
-                                
+
                                 {/* Overview */}
                                 <div className="mb-6">
                                     <h4 className="text-blue-200 font-medium mb-2">Overview</h4>
@@ -374,7 +374,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         {selectedMovie.description || movieDetails?.overview || 'No description available.'}
                                     </p>
                                 </div>
-                                
+
                                 {/* Cast and crew */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     {/* Director */}
@@ -386,7 +386,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                             </p>
                                         </div>
                                     )}
-                                    
+
                                     {/* Cast */}
                                     {movieDetails?.credits?.cast?.length > 0 && (
                                         <div>
@@ -397,7 +397,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Watch providers if available */}
                                 {movieDetails?.['watch/providers']?.results?.US?.flatrate && (
                                     <div className="mb-6">
@@ -406,8 +406,8 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                             {movieDetails['watch/providers'].results.US.flatrate.slice(0, 5).map((provider: any) => (
                                                 <div key={provider.provider_id} className="flex items-center bg-gray-800/50 px-3 py-1 rounded-full">
                                                     {provider.logo_path && (
-                                                        <img 
-                                                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`} 
+                                                        <img
+                                                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
                                                             alt={provider.provider_name}
                                                             className="w-4 h-4 mr-1.5 rounded-full"
                                                         />
@@ -418,7 +418,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {/* Like button */}
                                 <div className="mt-6">
                                     <button
@@ -426,7 +426,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isInWishlist(selectedMovie.id)
                                             ? 'bg-pink-600 hover:bg-pink-700 text-white'
                                             : 'bg-white/10 hover:bg-white/20 text-white'
-                                        }`}
+                                            }`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

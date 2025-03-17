@@ -43,8 +43,8 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
 
   // Sort wishlist with newest first
   const sortedWishlist = [...wishlist].sort((a, b) => {
-    return new Date(b.releaseDate).getTime() - 
-           new Date(a.releaseDate).getTime();
+    return new Date(b.releaseDate).getTime() -
+      new Date(a.releaseDate).getTime();
   });
 
   const formatDate = (dateString: string) => {
@@ -70,17 +70,17 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80" onClick={onClose}>
       <div className="min-h-screen flex items-center justify-center p-4">
         {/* Modal Content */}
-        <div 
+        <div
           className="relative bg-gray-900 rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header with close button */}
-          <div className="sticky top-0 bg-gray-900/90 backdrop-blur-md z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
+          <div className="sticky top-0 bg-gray-900/90 z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Your Liked Movies</h2>
-            <button 
+            <button
               className="text-gray-400 hover:text-white rounded-full p-2 hover:bg-white/10 transition-colors"
               onClick={onClose}
             >
@@ -89,7 +89,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
               </svg>
             </button>
           </div>
-          
+
           <div className="p-6">
             {wishlist.length === 0 ? (
               <div className="text-center py-12">
@@ -100,8 +100,8 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <h3 className="text-xl font-medium text-white mb-2">No liked movies yet</h3>
                 <p className="text-blue-300 mb-6">Start liking movies to build your collection</p>
-                <button 
-                  onClick={onClose} 
+                <button
+                  onClick={onClose}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   Discover Movies
@@ -112,7 +112,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                 {/* Grid of wishlist movies */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {sortedWishlist.map((movie) => (
-                    <div 
+                    <div
                       key={movie.id}
                       className="bg-gray-800 rounded-lg overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer"
                       onClick={() => setSelectedMovie(movie)}
@@ -129,24 +129,24 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                             <span className="text-gray-400 text-sm text-center px-2">{movie.title}</span>
                           </div>
                         )}
-                        
+
                         {/* Source badge */}
-                        <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-opacity-80" 
-                            style={{ 
-                              backgroundColor: movie.source === 'recommended' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(139, 92, 246, 0.8)'
-                            }}>
+                        <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-opacity-80"
+                          style={{
+                            backgroundColor: movie.source === 'recommended' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(139, 92, 246, 0.8)'
+                          }}>
                           {movie.source === 'recommended' ? 'Rec' : 'Trend'}
                         </div>
-                        
+
                         {/* Rating badge */}
                         {movie.rating && (
                           <div className="absolute top-2 right-2 bg-yellow-600/80 text-white px-1.5 py-0.5 rounded text-xs">
                             ★ {movie.rating}
                           </div>
                         )}
-                        
+
                         {/* Remove button */}
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveFromWishlist(movie.id);
@@ -157,7 +157,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
-                        
+
                         {/* Date added indicator */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent py-2 px-3">
                           <p className="text-gray-300 text-xs">
@@ -165,7 +165,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                           </p>
                         </div>
                       </div>
-                      
+
                       <div className="p-3">
                         <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
                         <p className="text-xs text-gray-400 mt-1">
@@ -175,16 +175,16 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Movie details modal */}
                 {selectedMovie && (
-                  <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
-                    <div 
-                      className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn backdrop-blur-lg"
+                  <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
+                    <div
+                      className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {/* Close button */}
-                      <button 
+                      <button
                         className="absolute top-4 right-4 text-white/80 hover:text-white z-20 bg-black/30 rounded-full p-2"
                         onClick={() => setSelectedMovie(null)}
                       >
@@ -192,7 +192,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
-                      
+
                       <div className="flex flex-col md:flex-row">
                         {/* Movie poster */}
                         <div className="w-full md:w-1/3 relative h-80 md:h-auto">
@@ -209,16 +209,16 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               </svg>
                             </div>
                           )}
-                          
+
                           {/* Source badge */}
-                          <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium bg-opacity-90" 
-                              style={{ 
-                                backgroundColor: selectedMovie.source === 'recommended' ? 'rgba(59, 130, 246, 0.9)' : 'rgba(139, 92, 246, 0.9)'
-                              }}>
+                          <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium bg-opacity-90"
+                            style={{
+                              backgroundColor: selectedMovie.source === 'recommended' ? 'rgba(59, 130, 246, 0.9)' : 'rgba(139, 92, 246, 0.9)'
+                            }}>
                             {selectedMovie.source === 'recommended' ? 'Recommended' : 'Trending'}
                           </div>
                         </div>
-                        
+
                         {/* Content */}
                         <div className="p-6 md:p-8 flex-1">
                           <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               </div>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center text-blue-300 text-sm space-x-3 mt-1 mb-6">
                             <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
                             {movieDetails?.runtime && (
@@ -247,7 +247,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               </>
                             )}
                           </div>
-                          
+
                           {/* Genre tags */}
                           {movieDetails?.genres && (
                             <div className="flex flex-wrap gap-2 mb-6">
@@ -258,7 +258,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               ))}
                             </div>
                           )}
-                          
+
                           {/* Overview */}
                           <div className="mb-6">
                             <h4 className="text-blue-200 font-medium mb-2">Overview</h4>
@@ -266,7 +266,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               {selectedMovie.description || movieDetails?.overview || 'No description available.'}
                             </p>
                           </div>
-                          
+
                           {/* Cast and crew */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             {/* Director */}
@@ -278,7 +278,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                                 </p>
                               </div>
                             )}
-                            
+
                             {/* Cast */}
                             {movieDetails?.credits?.cast?.length > 0 && (
                               <div>
@@ -289,7 +289,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Watch providers if available */}
                           {movieDetails?.['watch/providers']?.results?.US?.flatrate && (
                             <div className="mb-6">
@@ -298,8 +298,8 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                                 {movieDetails['watch/providers'].results.US.flatrate.slice(0, 5).map((provider: any) => (
                                   <div key={provider.provider_id} className="flex items-center bg-gray-800/50 px-3 py-1 rounded-full">
                                     {provider.logo_path && (
-                                      <img 
-                                        src={`https://image.tmdb.org/t/p/original${provider.logo_path}`} 
+                                      <img
+                                        src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
                                         alt={provider.provider_name}
                                         className="w-4 h-4 mr-1.5 rounded-full"
                                       />
@@ -310,13 +310,13 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               </div>
                             </div>
                           )}
-                          
+
                           {/* Date added */}
                           <div className="mt-6 pt-6 border-t border-white/10">
                             <p className="text-blue-300 text-sm">
                               Added to likes on {formatDate(selectedMovie.dateAdded || selectedMovie.releaseDate)}
                             </p>
-                            
+
                             {/* Remove button */}
                             <button
                               onClick={() => {
@@ -336,7 +336,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Clear Wishlist Button */}
                 {wishlist.length > 0 && (
                   <div className="mt-8 text-center">
@@ -362,7 +362,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Toast notification */}
       {toast.show && (
         <Toast

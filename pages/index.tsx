@@ -54,7 +54,7 @@ export default function Home() {
 
     const handleSubmit = async (input: string) => {
         setIsLoading(true);
-        
+
         try {
             const response = await fetch('/api/recommendations', {
                 method: 'POST',
@@ -69,7 +69,7 @@ export default function Home() {
             }
 
             const data = await response.json();
-            
+
             if (data.recommendations && data.recommendations.length > 0) {
                 setRecommendations(data.recommendations);
             }
