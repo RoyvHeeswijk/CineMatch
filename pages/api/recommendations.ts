@@ -212,7 +212,7 @@ export default async function handler(
         }
 
         // Optimize the OpenAI API call for faster responses - but with correct model name
-        const prompt = `Based on this input: "${userInput}", recommend 10 suitable movies with title, year, and a brief description.`;
+        const prompt = `Based on this input: "${userInput}", recommend 12 suitable movies with title, year, and a brief description.`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo", // Use the standard model that works
@@ -268,7 +268,7 @@ export default async function handler(
                                 rating: movie.vote_average.toString(),
                                 posterPath: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null
                             }))
-                            .slice(0, 10);
+                            .slice(0, 12);
                     } catch (fallbackError) {
                         console.error('Error in fallback search:', fallbackError);
                     }

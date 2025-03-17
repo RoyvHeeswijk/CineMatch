@@ -3,7 +3,6 @@ import MovieForm from '@/components/MovieForm';
 import TrendingSection from '@/components/TrendingSection';
 import RecommendationList from '@/components/RecommendationList';
 import Head from 'next/head';
-import WishlistButton from '@/components/WishlistButton';
 import { useWishlist } from '@/context/WishlistContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import Toast from '@/components/Toast';
@@ -12,8 +11,8 @@ import WishlistModal from '@/components/WishlistModal';
 export default function Home() {
     const [recommendations, setRecommendations] = useState<any[]>([]);
     const [trendingMovies, setTrendingMovies] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const { wishlistCount, isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+    const [isLoading, setIsLoading] = useState(false);
+    const { wishlistCount } = useWishlist();
     const [toast, setToast] = useState<{
         show: boolean;
         message: string;
@@ -23,7 +22,7 @@ export default function Home() {
         message: '',
         type: 'success'
     });
-    const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
+    const [showWishlist, setShowWishlist] = useState(false);
 
     useEffect(() => {
         // Fetch trending movies when the page loads
@@ -53,43 +52,44 @@ export default function Home() {
         }
     }, [recommendations]);
 
-    const handleWishlistToggle = (movie: any, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleSubmit = async (input: string) => {
+        setIsLoading(true);
+        
+        try {
+            const response = await fetch('/api/recommendations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userInput: input }),
+            });
 
-        if (isInWishlist(movie.id)) {
-            removeFromWishlist(movie.id);
-            setToast({
-                show: true,
-                message: `${movie.title} removed from wishlist`,
-                type: 'info'
-            });
-        } else {
-            addToWishlist({
-                id: movie.id,
-                title: movie.title,
-                posterPath: movie.poster_path || movie.posterPath,
-                releaseDate: movie.release_date || movie.releaseDate,
-                description: movie.overview || movie.description,
-                rating: movie.vote_average?.toString() || movie.rating,
-                source: 'recommended'
-            });
-            setToast({
-                show: true,
-                message: `${movie.title} added to wishlist`,
-                type: 'success'
-            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch recommendations');
+            }
+
+            const data = await response.json();
+            
+            if (data.recommendations && data.recommendations.length > 0) {
+                setRecommendations(data.recommendations);
+            }
+        } catch (err) {
+            console.error('Error fetching recommendations:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <WishlistProvider>
             <Head>
-                <title>CineMatch | Find Your Next Favorite Movie</title>
-                <meta name="description" content="Discover movies tailored to your taste" />
+                <title>CineMatch | Find Your Perfect Movie Match</title>
+                <meta name="description" content="Get personalized movie recommendations based on your preferences" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/favicon.ico" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
             </Head>
 
             <main className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white font-['Inter']">
@@ -109,13 +109,13 @@ export default function Home() {
                             CineMatch
                         </h1>
                         <button
-                            onClick={() => setIsWishlistModalOpen(true)}
-                            className="relative flex items-center justify-center p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                            onClick={() => setShowWishlist(true)}
+                            className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-4 py-2 rounded-full transition-colors"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
+                                className="h-5 w-5 text-pink-500"
+                                fill="currentColor"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
@@ -126,11 +126,7 @@ export default function Home() {
                                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                 />
                             </svg>
-                            {wishlistCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-pink-600 text-white w-5 h-5 flex items-center justify-center rounded-full text-xs">
-                                    {wishlistCount > 99 ? '99+' : wishlistCount}
-                                </span>
-                            )}
+                            <span>Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}</span>
                         </button>
                     </div>
 
@@ -145,7 +141,7 @@ export default function Home() {
                                         </svg>
                                         Find Your Perfect Movie
                                     </h2>
-                                    <MovieForm setRecommendations={setRecommendations} setLoading={setLoading} />
+                                    <MovieForm setRecommendations={setRecommendations} setLoading={setIsLoading} />
                                 </div>
                             </div>
 
@@ -160,9 +156,9 @@ export default function Home() {
                                                 </div>
                                                 <h2 className="text-xl md:text-2xl font-bold text-white">Your Personalized Recommendations</h2>
                                             </div>
-                                            <RecommendationList recommendations={recommendations} />
+                                            <RecommendationList recommendations={recommendations} isLoading={isLoading} />
                                         </div>
-                                    ) : !loading && (
+                                    ) : !isLoading && (
                                         <div className="backdrop-blur-xl bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
                                             <div className="text-center py-10">
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-400 mb-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,10 +277,10 @@ export default function Home() {
                 />
             )}
 
-            {isWishlistModalOpen && (
+            {showWishlist && (
                 <WishlistModal
-                    isOpen={isWishlistModalOpen}
-                    onClose={() => setIsWishlistModalOpen(false)}
+                    isOpen={showWishlist}
+                    onClose={() => setShowWishlist(false)}
                 />
             )}
         </WishlistProvider>

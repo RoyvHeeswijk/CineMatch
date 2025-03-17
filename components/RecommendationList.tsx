@@ -2,9 +2,13 @@ import React, { useState, useEffect, memo } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { Movie } from '@/types/movie';
+import Image from 'next/image';
+import WishlistButton from './WishlistButton';
+import Toast from './Toast';
 
 interface RecommendationListProps {
     recommendations: Movie[];
+    isLoading?: boolean;
 }
 
 interface CastMember {
@@ -112,90 +116,75 @@ const MovieCard = memo(({
     );
 });
 
-export default function RecommendationList({ recommendations }: RecommendationListProps) {
+const RecommendationList: React.FC<RecommendationListProps> = ({
+    recommendations,
+    isLoading = false
+}) => {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [movieDetails, setMovieDetails] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' as const });
 
-    // Format runtime to hours and minutes
-    const formatRuntime = (runtime: number): string => {
-        const hours = Math.floor(runtime / 60);
-        const minutes = runtime % 60;
-        return `${hours}h ${minutes}m`;
-    };
-
-    // Function to handle viewing movie details
-    const handleViewDetails = (movie: Movie) => {
-        setSelectedMovie(movie);
-        setLoading(true);
-
-        // If we have a TMDB ID, fetch additional details
-        if (movie.tmdbId) {
-            fetchMovieDetails(movie.tmdbId);
-        } else {
-            // If no tmdbId, just show what we have without loading
-            setLoading(false);
-        }
-    };
-
-    // Fetch additional movie details from TMDB if needed
-    const fetchMovieDetails = async (tmdbId: string) => {
-        try {
-            // Check if tmdbId is valid before making the API call
-            if (!tmdbId) {
-                setLoading(false);
-                return;
-            }
-
-            const response = await fetch(`/api/movie/${tmdbId}`);
-            const data = await response.json();
-            setMovieDetails(data);
-        } catch (error) {
-            console.error('Error fetching movie details:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Close the movie details modal
-    const closeModal = () => {
-        setSelectedMovie(null);
-        setMovieDetails(null);
-    };
-
-    // Handle escape key to close modal
+    // Close toast after duration
     useEffect(() => {
-        const handleEscapeKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && selectedMovie) {
-                closeModal();
-            }
-        };
+        if (toast.show) {
+            const timer = setTimeout(() => {
+                setToast({ ...toast, show: false });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
 
-        window.addEventListener('keydown', handleEscapeKey);
-        return () => window.removeEventListener('keydown', handleEscapeKey);
+    // Fetch additional movie details when a movie is selected
+    useEffect(() => {
+        if (selectedMovie?.tmdbId) {
+            fetch(`/api/movie/${selectedMovie.tmdbId}`)
+                .then(res => res.json())
+                .then(data => {
+                    setMovieDetails(data);
+                })
+                .catch(err => {
+                    console.error('Error fetching movie details:', err);
+                });
+        } else {
+            setMovieDetails(null);
+        }
     }, [selectedMovie]);
 
-    if (loading) {
-        return <LoadingSkeleton />;
+    if (isLoading) {
+        return (
+            <div className="p-4">
+                <h2 className="text-xl font-bold mb-4">Finding Recommendations...</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={i} className="aspect-[2/3] bg-gray-800/30 rounded-lg animate-pulse"></div>
+                    ))}
+                </div>
+            </div>
+        );
     }
 
-    if (!recommendations.length) return null;
+    // If no recommendations, show empty state
+    if (!recommendations || recommendations.length === 0) {
+        return (
+            <div className="p-4">
+                <h2 className="text-xl font-bold mb-4">No Recommendations Available</h2>
+                <p className="text-gray-400">Try searching with different preferences</p>
+            </div>
+        );
+    }
 
-    // Update the wishlist toggle function to highlight the selected movie
-    const handleWishlistToggle = (movie: Movie, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Identify the card element for highlight effect
-        const movieCard = e.currentTarget.closest('.movie-card');
+    // Handle liking/unliking a movie
+    const handleLikeToggle = (movie: any, e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation(); // Prevent opening movie details when clicking like button
+        }
 
         if (isInWishlist(movie.id)) {
             removeFromWishlist(movie.id);
             setToast({
                 show: true,
-                message: `${movie.title} removed from wishlist`,
+                message: `${movie.title} removed from likes`,
                 type: 'info'
             });
         } else {
@@ -203,169 +192,255 @@ export default function RecommendationList({ recommendations }: RecommendationLi
                 id: movie.id,
                 title: movie.title,
                 posterPath: movie.posterPath,
-                releaseDate: movie.releaseDate || new Date().toISOString(),
-                description: getMovieDescription(movie),
-                rating: movie.rating || '?',
+                releaseDate: movie.releaseDate,
+                description: movie.description,
+                rating: movie.rating,
                 source: 'recommended'
             });
-
-            // Add highlight effect to the card
-            if (movieCard) {
-                movieCard.classList.add('highlight-wishlist');
-                setTimeout(() => {
-                    movieCard.classList.remove('highlight-wishlist');
-                }, 1500);
-            }
-
             setToast({
                 show: true,
-                message: `${movie.title} added to wishlist`,
+                message: `${movie.title} added to likes`,
                 type: 'info'
             });
         }
     };
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'Unknown release date';
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    };
+
+    const formatRuntime = (minutes: number) => {
+        if (!minutes) return '';
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours}h ${mins}m`;
+    };
+
     return (
-        <>
-            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                {recommendations.map((movie, index) => (
-                    <MovieCard
-                        key={`recommendation-${movie.id || index}`}
-                        movie={movie}
-                        onViewDetails={handleViewDetails}
-                        onWishlistToggle={handleWishlistToggle}
-                        isInWishlist={isInWishlist(movie.id)}
-                    />
+        <div className="p-4">
+            <h2 className="text-xl font-bold mb-4">Recommended Movies</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+                {recommendations.slice(0, 12).map((movie) => (
+                    <div
+                        key={movie.id}
+                        className="bg-gray-800/80 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-700/80 relative flex flex-col"
+                        onClick={() => setSelectedMovie(movie)}
+                    >
+                        <div className="relative aspect-[2/3]">
+                            {movie.posterPath ? (
+                                <img
+                                    src={movie.posterPath}
+                                    alt={movie.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-900">
+                                    <span className="text-sm px-4 text-center">{movie.title}</span>
+                                </div>
+                            )}
+                            
+                            {/* Overlay with gradient for better readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            
+                            {/* Rating badge */}
+                            {movie.rating && (
+                                <div className="absolute top-2 left-2 bg-yellow-600/80 text-white px-2 py-0.5 rounded text-xs">
+                                    ★ {movie.rating}
+                                </div>
+                            )}
+                            
+                            {/* Like Button */}
+                            <button
+                                className={`absolute top-2 right-2 p-1.5 rounded-full ${isInWishlist(movie.id)
+                                    ? 'bg-pink-600 text-white'
+                                    : 'bg-black/50 text-white/70 hover:text-white'
+                                }`}
+                                onClick={(e) => handleLikeToggle(movie, e)}
+                                aria-label={isInWishlist(movie.id) ? "Unlike" : "Like"}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {/* Movie info */}
+                        <div className="p-3 flex-1 flex flex-col">
+                            <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
+                            <div className="flex items-center mt-1 text-xs text-blue-300">
+                                <span>{new Date(movie.releaseDate).getFullYear()}</span>
+                                {movie.genres && (
+                                    <span className="ml-2 truncate">{movie.genres}</span>
+                                )}
+                            </div>
+                            <p className="mt-2 text-xs text-gray-400 line-clamp-2">
+                                {movie.description}
+                            </p>
+                        </div>
+                    </div>
                 ))}
             </div>
 
-            {/* Movie Details Modal - Updated to match TrendingSection and fetch TMDB data */}
+            {/* Toast notification */}
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
+                />
+            )}
+
+            {/* Full-screen movie details modal */}
             {selectedMovie && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1a1a1a] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-3xl font-bold">{selectedMovie.title}</h3>
-                                <button
-                                    onClick={closeModal}
-                                    className="text-gray-400 hover:text-white text-2xl"
-                                >
-                                    ×
-                                </button>
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
+                    <div 
+                        className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn backdrop-blur-lg"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button */}
+                        <button 
+                            className="absolute top-4 right-4 text-white/80 hover:text-white z-20 bg-black/30 rounded-full p-2"
+                            onClick={() => setSelectedMovie(null)}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        
+                        <div className="flex flex-col md:flex-row">
+                            {/* Movie poster */}
+                            <div className="w-full md:w-1/3 relative h-80 md:h-auto">
+                                {selectedMovie.posterPath ? (
+                                    <img
+                                        src={selectedMovie.posterPath}
+                                        alt={selectedMovie.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-blue-900/50">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                                        </svg>
+                                    </div>
+                                )}
                             </div>
-
-                            <div className="flex flex-col md:flex-row gap-8">
-                                <div className="md:w-1/3">
-                                    <div className="rounded-lg overflow-hidden shadow-2xl">
-                                        <img
-                                            src={selectedMovie.posterPath || ''}
-                                            alt={selectedMovie.title}
-                                            className="w-full"
-                                        />
-                                    </div>
+                            
+                            {/* Content */}
+                            <div className="p-6 md:p-8 flex-1">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-3xl font-bold text-white mb-2">{selectedMovie.title}</h2>
+                                    {selectedMovie.rating && (
+                                        <div className="flex items-center">
+                                            <span className="text-yellow-400 mr-1">★</span>
+                                            <span className="text-white font-medium">{selectedMovie.rating}</span>
+                                            <span className="text-blue-300 text-xs ml-1">/10</span>
+                                        </div>
+                                    )}
                                 </div>
-
-                                <div className="md:w-2/3">
-                                    <div className="text-sm text-gray-400 mb-6 flex items-center gap-3 flex-wrap">
-                                        {selectedMovie.rating && (
-                                            <span className="bg-blue-600 text-white px-2 py-1 rounded">
-                                                ★ {selectedMovie.rating}
-                                            </span>
-                                        )}
-                                        <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
-
-                                        {/* Show runtime from API data if available */}
-                                        {movieDetails?.runtime ? (
+                                
+                                <div className="flex items-center text-blue-300 text-sm space-x-3 mt-1 mb-6">
+                                    <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
+                                    {movieDetails?.runtime && (
+                                        <>
+                                            <span>•</span>
                                             <span>{formatRuntime(movieDetails.runtime)}</span>
-                                        ) : selectedMovie.runtime ? (
-                                            <span>{formatRuntime(selectedMovie.runtime)}</span>
-                                        ) : null}
-
-                                        {/* Show genres from API data if available */}
-                                        {movieDetails?.genres ? (
-                                            <span>{movieDetails.genres.map((g: Genre) => g.name).join(', ')}</span>
-                                        ) : selectedMovie.genres ? (
-                                            <span>{selectedMovie.genres}</span>
-                                        ) : null}
+                                        </>
+                                    )}
+                                    {movieDetails?.genres && (
+                                        <>
+                                            <span>•</span>
+                                            <span>{movieDetails.genres.map((g: any) => g.name).join(', ')}</span>
+                                        </>
+                                    )}
+                                </div>
+                                
+                                {/* Genre tags */}
+                                {movieDetails?.genres && (
+                                    <div className="flex flex-wrap gap-2 mb-6">
+                                        {movieDetails.genres.map((genre: any) => (
+                                            <span key={genre.id} className="bg-blue-800/40 text-blue-100 px-3 py-1 rounded-full text-xs">
+                                                {genre.name}
+                                            </span>
+                                        ))}
                                     </div>
-
-                                    {/* Show overview from API data if available */}
-                                    {(movieDetails?.overview || selectedMovie.description) && (
-                                        <div className="mb-6">
-                                            <h4 className="text-lg font-semibold mb-2">Overview</h4>
-                                            <p className="text-gray-300 leading-relaxed">
-                                                {movieDetails?.overview || selectedMovie.description}
+                                )}
+                                
+                                {/* Overview */}
+                                <div className="mb-6">
+                                    <h4 className="text-blue-200 font-medium mb-2">Overview</h4>
+                                    <p className="text-blue-100 leading-relaxed">
+                                        {selectedMovie.description || movieDetails?.overview || 'No description available.'}
+                                    </p>
+                                </div>
+                                
+                                {/* Cast and crew */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    {/* Director */}
+                                    {movieDetails?.credits?.crew?.find((c: any) => c.job === 'Director')?.name && (
+                                        <div>
+                                            <h4 className="text-blue-200 font-medium mb-2">Director</h4>
+                                            <p className="text-white">
+                                                {movieDetails.credits.crew.find((c: any) => c.job === 'Director').name}
                                             </p>
                                         </div>
                                     )}
-
-                                    <div className="text-sm space-y-2">
-                                        {/* Show director from API data if available */}
-                                        {movieDetails?.credits?.crew?.find((c: CrewMember) => c.job === 'Director')?.name ? (
-                                            <p className="text-gray-300">
-                                                <span className="text-gray-400">Director: </span>
-                                                {movieDetails.credits.crew.find((c: CrewMember) => c.job === 'Director').name}
+                                    
+                                    {/* Cast */}
+                                    {movieDetails?.credits?.cast?.length > 0 && (
+                                        <div>
+                                            <h4 className="text-blue-200 font-medium mb-2">Cast</h4>
+                                            <p className="text-white">
+                                                {movieDetails.credits.cast.slice(0, 5).map((c: any) => c.name).join(', ')}
                                             </p>
-                                        ) : selectedMovie.director ? (
-                                            <p className="text-gray-300">
-                                                <span className="text-gray-400">Director: </span>
-                                                {selectedMovie.director}
-                                            </p>
-                                        ) : null}
-
-                                        {/* Show cast from API data if available */}
-                                        {movieDetails?.credits?.cast?.length > 0 ? (
-                                            <p className="text-gray-300">
-                                                <span className="text-gray-400">Cast: </span>
-                                                {movieDetails.credits.cast.slice(0, 5).map((c: CastMember) => c.name).join(', ')}
-                                            </p>
-                                        ) : selectedMovie.cast ? (
-                                            <p className="text-gray-300">
-                                                <span className="text-gray-400">Cast: </span>
-                                                {selectedMovie.cast}
-                                            </p>
-                                        ) : null}
-
-                                        {/* Keep the comparison section which is unique to recommendations */}
-                                        {selectedMovie.comparison && (
-                                            <p className="text-gray-300">
-                                                <span className="text-gray-400">Similar To: </span>
-                                                {selectedMovie.comparison}
-                                            </p>
-                                        )}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {/* Watch providers if available */}
+                                {movieDetails?.['watch/providers']?.results?.US?.flatrate && (
+                                    <div className="mb-6">
+                                        <h4 className="text-blue-200 font-medium mb-2">Available on</h4>
+                                        <div className="flex space-x-2">
+                                            {movieDetails['watch/providers'].results.US.flatrate.slice(0, 5).map((provider: any) => (
+                                                <div key={provider.provider_id} className="flex items-center bg-gray-800/50 px-3 py-1 rounded-full">
+                                                    {provider.logo_path && (
+                                                        <img 
+                                                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`} 
+                                                            alt={provider.provider_name}
+                                                            className="w-4 h-4 mr-1.5 rounded-full"
+                                                        />
+                                                    )}
+                                                    <span className="text-xs">{provider.provider_name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-
-                                    <div className="mt-6">
-                                        <button
-                                            onClick={(e) => handleWishlistToggle(selectedMovie, e)}
-                                            className={`px-4 py-2 rounded transition-colors flex items-center ${isInWishlist(selectedMovie.id)
-                                                ? "bg-pink-600 hover:bg-pink-700 text-white"
-                                                : "bg-gray-700 hover:bg-gray-600 text-white"
-                                                }`}
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5 mr-2"
-                                                fill={isInWishlist(selectedMovie.id) ? "currentColor" : "none"}
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                                />
-                                            </svg>
-                                            {isInWishlist(selectedMovie.id) ? "Remove from Wishlist" : "Add to Wishlist"}
-                                        </button>
-                                    </div>
+                                )}
+                                
+                                {/* Like button */}
+                                <div className="mt-6">
+                                    <button
+                                        onClick={() => handleLikeToggle(selectedMovie)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isInWishlist(selectedMovie.id)
+                                            ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                                            : 'bg-white/10 hover:bg-white/20 text-white'
+                                        }`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        {isInWishlist(selectedMovie.id) ? 'Unlike' : 'Like This Movie'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
-} 
+};
+
+export default RecommendationList; 
