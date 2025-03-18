@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
 import Image from 'next/image';
+import { Movie } from '@/types/movie';
 
 // Define interfaces for TMDB API responses
 interface Genre {
@@ -37,36 +38,6 @@ interface TMDBMovie {
     description?: string;         // For compatibility with our internal API
 }
 
-interface Movie {
-    id: string;
-    title: string;
-    description?: string;  // Recommendation list uses description
-    overview?: string;     // Trending section uses overview
-    posterPath: string;
-    releaseDate: string;
-    runtime?: number;
-    formattedRuntime?: string;
-    rating?: string;
-    genres?: string;
-    director?: string;
-    cast?: string;
-    comparison?: string;
-    tmdbId?: string;
-    requestedGenre?: string;
-    preferenceDetails?: {
-        basedOn?: string;
-        minRating?: string;
-        maxYear?: string;
-        additionalRequests?: string;
-    };
-    userPreferences?: {
-        requestedGenre?: string;
-        minRating?: string;
-        maxYear?: string;
-        additionalPreferences?: string;
-    };
-}
-
 interface MovieDetails {
     id: number;
     title: string;
@@ -83,10 +54,15 @@ interface TrendingSectionProps {
     title: string;
     description: string;
     items: TMDBMovie[] | Movie[];
-    type: string;
+    type: 'movies' | 'shows';
 }
 
-export default function TrendingSection({ title, description, items, type }: TrendingSectionProps) {
+const TrendingSection: React.FC<TrendingSectionProps> = ({
+    title,
+    description,
+    items,
+    type
+}) => {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const [selectedItem, setSelectedItem] = React.useState<Movie | null>(null);
     const [movieDetails, setMovieDetails] = React.useState<MovieDetails | null>(null);
@@ -128,34 +104,23 @@ export default function TrendingSection({ title, description, items, type }: Tre
         return movie.description || movie.overview || '';
     };
 
-    const handleWishlistToggle = (item: TMDBMovie | Movie, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleWishlistToggle = (movie: any, e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation(); // Prevent opening movie details when clicking like button
+        }
 
-        // Identify the card element for highlight effect
-        const movieCard = e.currentTarget.closest('.movie-card');
-
-        if (isInWishlist(item.id)) {
-            removeFromWishlist(item.id);
+        if (isInWishlist(movie.id)) {
+            removeFromWishlist(movie.id);
         } else {
-            // Use our helper functions for safe property access
             addToWishlist({
-                id: item.id,
-                title: item.title,
-                posterPath: getMoviePosterPath(item),
-                releaseDate: getMovieReleaseDate(item),
-                description: getMovieOverview(item),
-                rating: getMovieRating(item),
+                id: movie.id,
+                title: movie.title,
+                posterPath: getMoviePosterPath(movie),
+                releaseDate: getMovieReleaseDate(movie),
+                description: getMovieOverview(movie),
+                rating: getMovieRating(movie),
                 source: 'trending'
             });
-
-            // Add highlight effect to the card
-            if (movieCard) {
-                movieCard.classList.add('highlight-wishlist');
-                setTimeout(() => {
-                    movieCard.classList.remove('highlight-wishlist');
-                }, 1500);
-            }
         }
     };
 
@@ -169,162 +134,93 @@ export default function TrendingSection({ title, description, items, type }: Tre
         setMovieDetails(null);
     };
 
-    // Fix the item access with type guards
-    const getMoviePosterPath = (item: TMDBMovie | Movie): string | null => {
-        return (item as any).poster_path || (item as any).posterPath || null;
+    // Helper functions to handle different API response formats
+    const getMoviePosterPath = (movie: any): string => {
+        return movie.posterPath || movie.poster_path ?
+            (movie.posterPath ? movie.posterPath : `https://image.tmdb.org/t/p/w500${movie.poster_path}`) :
+            '';
     };
 
-    const getMovieReleaseDate = (item: TMDBMovie | Movie): string => {
-        return (item as any).release_date || (item as any).releaseDate || '';
+    const getMovieReleaseDate = (movie: any): string => {
+        return movie.releaseDate || movie.release_date || '';
     };
 
-    const getMovieRating = (item: TMDBMovie | Movie): string => {
-        const rating = (item as any).vote_average || (item as any).rating;
-        return rating ? rating.toString() : '?';
+    const getMovieOverview = (movie: any): string => {
+        return movie.description || movie.overview || '';
     };
 
-    const getMovieOverview = (item: TMDBMovie | Movie): string => {
-        return (item as any).overview || (item as any).description || '';
+    const getMovieRating = (movie: any): number => {
+        return movie.rating || movie.vote_average || 0;
     };
 
     if (!items || items.length === 0) return null;
 
     return (
-        <>
-            <div className="section-container">
-                {/* Section Header with Badge */}
-                <div className="flex items-center mb-6">
-                    <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg px-3 py-1 text-white text-sm font-semibold mr-3">
-                        TOP 10
-                    </div>
-                    <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
-                </div>
-
-                <p className="text-blue-300/70 mb-6">{description}</p>
-
-                {/* Use the same flex layout as recommendations */}
-                <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {items.map((item, index) => (
-                        <div
-                            key={`trending-${item.id}`}
-                            className="flex-none w-[180px] sm:w-[200px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800 movie-card"
-                        >
-                            <div className="relative aspect-[2/3]">
-                                {/* Top 10 Ranking Badge */}
-                                <div className="absolute top-0 left-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xl w-10 h-10 flex items-center justify-center z-10">
-                                    {index + 1}
-                                </div>
-
-                                {/* Poster image */}
-                                {getMoviePosterPath(item) ? (
-                                    <img
-                                        src={`https://image.tmdb.org/t/p/w500${getMoviePosterPath(item)}`}
-                                        alt={item.title}
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
-                                        <span className="text-gray-400">{item.title}</span>
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-
-                                {/* Rating badge */}
-                                <div className="absolute top-2 left-12 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
-                                    {getMovieRating(item)} ★
-                                </div>
-
-                                {/* Release year */}
-                                <div className="flex flex-wrap text-xs text-gray-400 mt-1">
-                                    <span>{new Date(getMovieReleaseDate(item)).getFullYear()}</span>
-                                </div>
-
-                                {/* Wishlist button - same as recommendation */}
-                                <button
-                                    onClick={(e) => handleWishlistToggle(item, e)}
-                                    className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4"
-                                        fill={isInWishlist(item.id) ? "currentColor" : "none"}
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        style={{ color: isInWishlist(item.id) ? '#ec4899' : 'white' }}
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                        />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div className="p-3">
-                                <h3 className="text-sm font-semibold text-white truncate">{item.title}</h3>
-                                <div className="flex flex-wrap text-xs text-gray-400 mt-1">
-                                    <span>{new Date(getMovieReleaseDate(item)).getFullYear()}</span>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedItem(item as Movie)}
-                                    className="mt-3 w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded hover:from-purple-700 hover:to-indigo-700 transition-all text-xs font-medium"
-                                >
-                                    View Details
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+        <div className="mb-12">
+            <div className="flex justify-between items-end mb-4">
+                <div>
+                    <h2 className="text-xl font-bold text-white">{title}</h2>
+                    <p className="text-blue-300 text-sm">{description}</p>
                 </div>
             </div>
 
-            {/* Movie Details Modal */}
-            {selectedItem && (
-                <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1a1a1a] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-3xl font-bold">{selectedItem.title}</h3>
-                                <button
-                                    onClick={closeModal}
-                                    className="text-gray-400 hover:text-white text-2xl"
-                                >
-                                    ×
-                                </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+                {items.map((item, index) => (
+                    <div
+                        key={item.id}
+                        className="bg-gray-800/80 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-700/80 relative flex flex-col"
+                    >
+                        <div className="relative aspect-[2/3]">
+                            {getMoviePosterPath(item) ? (
+                                <img
+                                    src={getMoviePosterPath(item)}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-900">
+                                    <span className="text-sm px-4 text-center">{item.title}</span>
+                                </div>
+                            )}
+
+                            {/* Rank badge */}
+                            <div className="absolute top-2 left-2 bg-blue-600/80 text-white px-2 py-0.5 rounded text-xs font-bold">
+                                #{index + 1}
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-8">
-                                <div className="md:w-1/3">
-                                    <div className="rounded-lg overflow-hidden shadow-2xl">
-                                        <img
-                                            src={`https://image.tmdb.org/t/p/w500${getMoviePosterPath(selectedItem)}`}
-                                            alt={selectedItem.title}
-                                            className="w-full"
-                                        />
-                                    </div>
+                            {/* Rating badge */}
+                            {getMovieRating(item) > 0 && (
+                                <div className="absolute top-2 right-2 bg-yellow-600/80 text-white px-2 py-0.5 rounded text-xs">
+                                    ★ {getMovieRating(item)}
                                 </div>
+                            )}
 
-                                <div className="md:w-2/3">
-                                    <div className="text-sm text-gray-400 mb-6 flex items-center gap-3 flex-wrap">
-                                        <span className="bg-blue-600 text-white px-2 py-1 rounded">
-                                            ★ {getMovieRating(selectedItem)}
-                                        </span>
-                                        <span>{new Date(getMovieReleaseDate(selectedItem)).getFullYear()}</span>
-                                    </div>
+                            {/* Like Button */}
+                            <button
+                                className={`absolute bottom-2 right-2 p-1.5 rounded-full ${isInWishlist(item.id)
+                                    ? 'bg-pink-600 text-white'
+                                    : 'bg-black/50 text-white/70 hover:text-white'
+                                    }`}
+                                onClick={(e) => handleWishlistToggle(item, e)}
+                                aria-label={isInWishlist(item.id) ? "Unlike" : "Like"}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
+                        </div>
 
-                                    <div className="mb-6">
-                                        <h4 className="text-lg font-semibold mb-2">Overview</h4>
-                                        <p className="text-gray-300 leading-relaxed">
-                                            {getMovieOverview(selectedItem)}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="p-3">
+                            <h3 className="text-sm font-semibold text-white truncate">{item.title}</h3>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {new Date(getMovieReleaseDate(item)).getFullYear()}
+                            </p>
                         </div>
                     </div>
-                </div>
-            )}
-        </>
+                ))}
+            </div>
+        </div>
     );
-} 
+};
+
+export default TrendingSection; 
