@@ -74,15 +74,15 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
       <div className="min-h-screen flex items-center justify-center p-4">
         {/* Modal Content */}
         <div
-          className="relative bg-gray-900 rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-slideIn"
+          className="bg-gradient-to-b from-gray-900 to-blue-900/90 rounded-xl overflow-hidden shadow-2xl w-full max-w-4xl animate-scaleIn"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header with close button */}
           <div className="sticky top-0 bg-gray-900/90 z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Your Liked Movies</h2>
             <button
-              className="text-gray-400 hover:text-white rounded-full p-2 hover:bg-white/10 transition-colors"
               onClick={onClose}
+              className="text-gray-400 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
