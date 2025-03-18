@@ -74,7 +74,9 @@ export default function Home() {
     }, [recommendations]);
 
     const handleSubmit = async (input: string) => {
+        // Set loading state to true immediately when button is clicked
         setIsLoading(true);
+        setRecommendations([]); // Clear previous recommendations
 
         try {
             const response = await fetch('/api/recommendations', {
@@ -97,6 +99,7 @@ export default function Home() {
         } catch (err) {
             console.error('Error fetching recommendations:', err);
         } finally {
+            // Set loading state to false after response is received
             setIsLoading(false);
         }
     };
@@ -224,35 +227,24 @@ export default function Home() {
                             </div>
 
                             <div className="w-full lg:w-2/3 space-y-4 md:space-y-8">
-                                {/* Recommendations Section with Clear Heading */}
+                                {/* Recommendations Section */}
                                 <div id="recommendations-section" className="scroll-mt-16">
-                                    {recommendations.length > 0 ? (
-                                        <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
-                                            <div className="flex items-center mb-6">
-                                                <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg px-3 py-1 text-white text-sm font-semibold mr-3">
-                                                    RECOMMENDED
-                                                </div>
-                                                <h2 className="text-xl md:text-2xl font-bold text-white">Your Personalized Recommendations</h2>
+                                    <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                                        <div className="flex items-center mb-6">
+                                            <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg px-3 py-1 text-white text-sm font-semibold mr-3">
+                                                RECOMMENDED
                                             </div>
-                                            <RecommendationList
-                                                recommendations={recommendations}
-                                                isLoading={isLoading}
-                                                onSelectMovie={setSelectedMovie}
-                                            />
+                                            <h2 className="text-xl md:text-2xl font-bold text-white">
+                                                {isLoading ? "Finding Recommendations..." : "Your Movie Recommendations"}
+                                            </h2>
                                         </div>
-                                    ) : !isLoading && (
-                                        <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
-                                            <div className="text-center py-10">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-400 mb-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                                </svg>
-                                                <h3 className="text-xl font-medium text-blue-200 mb-2">Discover Your Perfect Movie Match</h3>
-                                                <p className="text-blue-300/70 max-w-md mx-auto">
-                                                    Tell us what you like, and we'll recommend movies tailored just for you.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+
+                                        <RecommendationList
+                                            recommendations={recommendations}
+                                            isLoading={isLoading}
+                                            onSelectMovie={setSelectedMovie}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Trending Section with Clear Heading */}
