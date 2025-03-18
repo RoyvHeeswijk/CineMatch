@@ -9,6 +9,7 @@ import Toast from './Toast';
 interface RecommendationListProps {
     recommendations: Movie[];
     isLoading?: boolean;
+    onSelectMovie?: (movie: any) => void;
 }
 
 interface CastMember {
@@ -118,7 +119,8 @@ const MovieCard = memo(({
 
 const RecommendationList: React.FC<RecommendationListProps> = ({
     recommendations,
-    isLoading = false
+    isLoading = false,
+    onSelectMovie
 }) => {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -175,7 +177,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
     }
 
     // Handle liking/unliking a movie
-    const handleLikeToggle = (movie: any, e?: React.MouseEvent) => {
+    const handleLikeToggle = (movie: Movie, e?: React.MouseEvent) => {
         if (e) {
             e.stopPropagation(); // Prevent opening movie details when clicking like button
         }
@@ -189,13 +191,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
             });
         } else {
             addToWishlist({
-                id: movie.id,
-                title: movie.title,
-                posterPath: movie.posterPath,
-                releaseDate: movie.releaseDate,
-                description: movie.description,
-                rating: movie.rating,
-                source: 'recommended'
+                ...movie
             });
             setToast({
                 show: true,
@@ -218,6 +214,17 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         return `${hours}h ${mins}m`;
     };
 
+    // Handle movie click to show details
+    const handleMovieClick = (movie: Movie) => {
+        if (onSelectMovie) {
+            // If parent provided a function, use it to show details at page level
+            onSelectMovie(movie);
+        } else {
+            // Otherwise use the component's internal state (fallback)
+            setSelectedMovie(movie);
+        }
+    };
+
     return (
         <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Recommended Movies</h2>
@@ -226,7 +233,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                     <div
                         key={movie.id}
                         className="bg-gray-800/80 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-700/80 relative flex flex-col"
-                        onClick={() => setSelectedMovie(movie)}
+                        onClick={() => handleMovieClick(movie)}
                     >
                         <div className="relative aspect-[2/3]">
                             {movie.posterPath ? (
@@ -293,7 +300,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
             )}
 
             {/* Full-screen movie details modal */}
-            {selectedMovie && (
+            {!onSelectMovie && selectedMovie && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
                     <div
                         className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn"
