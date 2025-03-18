@@ -4,12 +4,15 @@
 
 @layer utilities {
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 }
 
@@ -33,11 +36,82 @@ body {
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Mobile-specific styles */
+@media screen and (max-width: 767px) {
+
+  /* Simplify background for better performance */
+  .stars-container {
+    display: none;
+  }
+
+  /* Adjust spacing and text sizes */
+  body {
+    font-size: 14px;
+  }
+
+  /* Make buttons more touch-friendly */
+  button {
+    min-height: 44px;
+  }
+
+  /* Improve card readability */
+  .movie-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: none !important;
+    /* Disable hover effects on mobile */
+  }
+
+  /* Adjust modal padding for mobile */
+  .modal-content {
+    padding: 1rem;
+  }
+
+  /* Hide scrollbars on mobile */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Improve touch targets */
+  .touch-target {
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Add momentum scrolling for movie lists */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  /* Snap points for movie cards */
+  .flex-none {
+    scroll-snap-align: start;
+  }
+
+  /* Add visual indication of horizontal scrolling */
+  .overflow-x-auto::after {
+    content: '';
+    display: block;
+    flex: 0 0 1rem;
+    width: 1rem;
+  }
 }

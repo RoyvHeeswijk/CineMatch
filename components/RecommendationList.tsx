@@ -5,6 +5,7 @@ import { Movie } from '@/types/movie';
 import Image from 'next/image';
 import WishlistButton from './WishlistButton';
 import Toast from './Toast';
+import { useScreenSize } from '@/hooks/useScreenSize';
 
 interface RecommendationListProps {
     recommendations: Movie[];
@@ -57,7 +58,7 @@ const MovieCard = memo(({
     isInWishlist: boolean;
 }) => {
     return (
-        <div className="flex-none w-[180px] sm:w-[200px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800 movie-card">
+        <div className="flex-none w-[140px] sm:w-[180px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800 movie-card">
             <div className="relative aspect-[2/3]">
                 {movie.posterPath ? (
                     <img
@@ -126,6 +127,8 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [movieDetails, setMovieDetails] = useState<any>(null);
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' as const });
+    const [showAllMovies, setShowAllMovies] = useState(false);
+    const { isMobile } = useScreenSize();
 
     // Close toast after duration
     useEffect(() => {
@@ -225,11 +228,15 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         }
     };
 
+    const visibleMovies = isMobile && !showAllMovies
+        ? recommendations.slice(0, 6)
+        : recommendations;
+
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Recommended Movies</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-                {recommendations.slice(0, 12).map((movie) => (
+        <div className="p-2 md:p-4">
+            <h2 className="text-lg md:text-xl font-bold mb-2 md:mb-4">Recommended Movies</h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
+                {visibleMovies.map((movie) => (
                     <div
                         key={movie.id}
                         className="bg-gray-800/80 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-700/80 relative flex flex-col"
@@ -243,52 +250,62 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-900">
-                                    <span className="text-sm px-4 text-center">{movie.title}</span>
+                                <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                                    <span className="text-gray-400 text-[10px] md:text-sm px-2 text-center">{movie.title}</span>
                                 </div>
                             )}
-
-                            {/* Overlay with gradient for better readability */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                             {/* Rating badge */}
-                            {movie.rating && (
-                                <div className="absolute top-2 left-2 bg-yellow-600/80 text-white px-2 py-0.5 rounded text-xs">
-                                    ★ {movie.rating}
-                                </div>
-                            )}
+                            <div className="absolute top-0.5 left-0.5 md:top-2 md:left-2 bg-blue-600 text-white px-1 md:px-2 py-0.5 rounded text-[8px] md:text-xs font-medium">
+                                {movie.rating} ★
+                            </div>
 
-                            {/* Like Button */}
+                            {/* Like button - smaller and better styled for mobile */}
                             <button
-                                className={`absolute top-2 right-2 p-1.5 rounded-full ${isInWishlist(movie.id)
-                                    ? 'bg-pink-600 text-white'
-                                    : 'bg-black/50 text-white/70 hover:text-white'
-                                    }`}
                                 onClick={(e) => handleLikeToggle(movie, e)}
-                                aria-label={isInWishlist(movie.id) ? "Unlike" : "Like"}
+                                className={`absolute top-0.5 right-0.5 md:top-2 md:right-2 p-1 md:p-1.5 rounded-full transition-colors ${isInWishlist(movie.id)
+                                    ? 'bg-pink-600/90 text-white'
+                                    : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
+                                    }`}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-2.5 w-2.5 md:h-4 md:w-4"
+                                    fill={isInWishlist(movie.id) ? "currentColor" : "none"}
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                    />
                                 </svg>
                             </button>
                         </div>
 
-                        {/* Movie info */}
-                        <div className="p-3 flex-1 flex flex-col">
-                            <h3 className="text-sm font-semibold text-white truncate">{movie.title}</h3>
-                            <div className="flex items-center mt-1 text-xs text-blue-300">
-                                <span>{new Date(movie.releaseDate).getFullYear()}</span>
-                                {movie.genres && (
-                                    <span className="ml-2 truncate">{movie.genres}</span>
-                                )}
-                            </div>
-                            <p className="mt-2 text-xs text-gray-400 line-clamp-2">
-                                {movie.description}
+                        <div className="p-1 md:p-3">
+                            <h3 className="text-[10px] md:text-sm font-semibold text-white truncate">{movie.title}</h3>
+                            <p className="text-[8px] md:text-xs text-gray-400 mt-0.5 md:mt-1">
+                                {new Date(movie.releaseDate).getFullYear()}
                             </p>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Show More/Less button - only on mobile and when there are more than 6 movies */}
+            {isMobile && recommendations.length > 6 && (
+                <div className="mt-4 text-center">
+                    <button
+                        onClick={() => setShowAllMovies(!showAllMovies)}
+                        className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-xs px-4 py-2 rounded-full transition-colors"
+                    >
+                        {showAllMovies ? 'Show Less' : `Show More Movies (${recommendations.length - 6} more)`}
+                    </button>
+                </div>
+            )}
 
             {/* Toast notification */}
             {toast.show && (
