@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
+import { useWatched } from '@/context/WatchedContext';
 import Toast from './Toast';
 
 interface WishlistModalProps {
@@ -9,6 +10,7 @@ interface WishlistModalProps {
 
 const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
+  const { isWatched } = useWatched();
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
   const [movieDetails, setMovieDetails] = useState<any>(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' as const });
@@ -146,17 +148,19 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                         )}
 
                         {/* Remove button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveFromWishlist(movie.id);
-                          }}
-                          className="absolute bottom-2 right-2 bg-black/50 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        <div className="absolute top-2 right-2 flex flex-col gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFromWishlist(movie.id);
+                            }}
+                            className="bg-black/50 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
 
                         {/* Date added indicator */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent py-2 px-3">

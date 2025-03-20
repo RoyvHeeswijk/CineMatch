@@ -227,34 +227,36 @@ export default function WatchedMovies() {
                                                         <h3 className="text-lg font-semibold text-white">{monthYear}</h3>
                                                     </div>
                                                     <div className="p-4">
-                                                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
+                                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                                                             {grouped[monthYear].map((movie) => (
                                                                 <div
                                                                     key={movie.id}
-                                                                    className="bg-gray-800/80 rounded-lg overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-gray-700/80 relative flex flex-col"
+                                                                    className="bg-gray-800/80 rounded-lg overflow-hidden shadow-lg transition-all duration-300 relative flex flex-col"
                                                                 >
+                                                                    {/* Poster section */}
                                                                     <div className="relative aspect-[2/3]">
                                                                         {movie.posterPath ? (
                                                                             <img
                                                                                 src={movie.posterPath}
                                                                                 alt={movie.title}
                                                                                 className="w-full h-full object-cover"
+                                                                                loading="lazy"
                                                                             />
                                                                         ) : (
                                                                             <div className="absolute inset-0 bg-gray-700 flex items-center justify-center">
-                                                                                <span className="text-gray-400 text-sm text-center px-2">{movie.title}</span>
+                                                                                <span className="text-gray-400 text-xs sm:text-sm text-center px-2">{movie.title}</span>
                                                                             </div>
                                                                         )}
 
-                                                                        {/* Date badge */}
-                                                                        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white rounded overflow-hidden">
-                                                                            <div className="bg-blue-500/80 px-2 py-0.5 text-[10px] font-medium">
+                                                                        {/* Date badge - adjusted for better visibility */}
+                                                                        <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm text-white rounded overflow-hidden">
+                                                                            <div className="bg-blue-500/90 px-1.5 py-0.5 text-[10px] sm:text-xs font-medium">
                                                                                 {new Intl.DateTimeFormat('en-US', {
                                                                                     month: 'short',
                                                                                     timeZone: 'UTC'
                                                                                 }).format(new Date(movie.watchedDate))}
                                                                             </div>
-                                                                            <div className="px-2 py-0.5 text-xs font-bold">
+                                                                            <div className="px-1.5 py-0.5 text-[10px] sm:text-xs font-bold">
                                                                                 {new Intl.DateTimeFormat('en-US', {
                                                                                     day: 'numeric',
                                                                                     timeZone: 'UTC'
@@ -262,57 +264,62 @@ export default function WatchedMovies() {
                                                                             </div>
                                                                         </div>
 
-                                                                        {/* Remove button */}
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                handleRemoveFromWatched(movie.id);
-                                                                            }}
-                                                                            className="absolute top-2 right-2 bg-black/50 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
-                                                                        >
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                                            </svg>
-                                                                        </button>
+                                                                        {/* Action buttons overlay - touch-friendly */}
+                                                                        <div className="absolute top-2 right-2 flex flex-col gap-2">
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleRemoveFromWatched(movie.id);
+                                                                                }}
+                                                                                className="bg-black/70 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
+                                                                                aria-label="Remove movie"
+                                                                            >
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
 
-                                                                    <div className="p-3 flex flex-col gap-2">
-                                                                        <h3 className="text-sm md:text-base font-semibold text-white line-clamp-1">{movie.title}</h3>
+                                                                    {/* Content section - improved spacing and touch targets */}
+                                                                    <div className="p-2 sm:p-3 flex flex-col gap-2">
+                                                                        <h3 className="text-sm sm:text-base font-semibold text-white line-clamp-1">{movie.title}</h3>
 
-                                                                        {/* Labels section */}
+                                                                        {/* Labels section - more compact on mobile */}
                                                                         {movie.labels && movie.labels.length > 0 && (
-                                                                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                                                            <div className="flex flex-wrap gap-1">
                                                                                 {movie.labels.map((label, index) => (
                                                                                     <div key={index} className="group relative">
                                                                                         {label.type === 'alone' && (
-                                                                                            <div className="bg-purple-500/20 text-purple-200 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1.5">
-                                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                            <div className="bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium flex items-center gap-1">
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                                                                 </svg>
-                                                                                                Watched Alone
+                                                                                                <span className="hidden sm:inline">Watched </span>Alone
                                                                                             </div>
                                                                                         )}
                                                                                         {label.type === 'with' && (
-                                                                                            <div className="bg-blue-500/20 text-blue-200 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1.5">
-                                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                            <div className="bg-blue-500/20 text-blue-200 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium flex items-center gap-1">
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                                                                                 </svg>
                                                                                                 {label.text.replace('Watch with ', 'With ')}
                                                                                             </div>
                                                                                         )}
                                                                                         {label.type === 'custom' && (
-                                                                                            <div className="bg-green-500/20 text-green-200 px-2 py-1 rounded-md text-xs font-medium">
+                                                                                            <div className="bg-green-500/20 text-green-200 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium">
                                                                                                 {label.text}
                                                                                             </div>
                                                                                         )}
+                                                                                        {/* Larger touch target for remove button */}
                                                                                         <button
                                                                                             onClick={(e) => {
                                                                                                 e.stopPropagation();
                                                                                                 handleRemoveLabel(movie.id, index);
                                                                                             }}
-                                                                                            className="absolute -top-1 -right-1 bg-gray-800 text-gray-400 hover:text-red-400 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                                            className="absolute -top-1 -right-1 bg-gray-800 text-gray-400 hover:text-red-400 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                                         >
-                                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                                                             </svg>
                                                                                         </button>
@@ -321,17 +328,17 @@ export default function WatchedMovies() {
                                                                             </div>
                                                                         )}
 
-                                                                        {/* Action buttons */}
-                                                                        <div className="mt-auto space-y-2">
+                                                                        {/* Action buttons - larger touch targets */}
+                                                                        <div className="mt-auto space-y-1.5">
                                                                             {editingLabels === movie.id ? (
-                                                                                <div className="space-y-2">
-                                                                                    <div className="flex gap-1.5">
+                                                                                <div className="space-y-1.5">
+                                                                                    <div className="grid grid-cols-2 gap-1.5">
                                                                                         <button
                                                                                             onClick={(e) => {
                                                                                                 e.stopPropagation();
                                                                                                 handleAddLabel(movie.id, 'alone');
                                                                                             }}
-                                                                                            className="flex-1 text-xs bg-purple-500/30 hover:bg-purple-500/40 text-purple-200 px-2 py-1.5 rounded-md transition-colors font-medium"
+                                                                                            className="text-[10px] sm:text-xs bg-purple-500/30 hover:bg-purple-500/40 text-purple-200 px-2 py-2 rounded transition-colors font-medium"
                                                                                         >
                                                                                             Alone
                                                                                         </button>
@@ -340,7 +347,7 @@ export default function WatchedMovies() {
                                                                                                 e.stopPropagation();
                                                                                                 setNewLabel('with');
                                                                                             }}
-                                                                                            className="flex-1 text-xs bg-blue-500/30 hover:bg-blue-500/40 text-blue-200 px-2 py-1.5 rounded-md transition-colors font-medium"
+                                                                                            className="text-[10px] sm:text-xs bg-blue-500/30 hover:bg-blue-500/40 text-blue-200 px-2 py-2 rounded transition-colors font-medium"
                                                                                         >
                                                                                             With...
                                                                                         </button>
@@ -350,33 +357,19 @@ export default function WatchedMovies() {
                                                                                             e.stopPropagation();
                                                                                             setNewLabel('custom');
                                                                                         }}
-                                                                                        className="w-full text-xs bg-green-500/30 hover:bg-green-500/40 text-green-200 px-2 py-1.5 rounded-md transition-colors font-medium"
+                                                                                        className="w-full text-[10px] sm:text-xs bg-green-500/30 hover:bg-green-500/40 text-green-200 px-2 py-2 rounded transition-colors font-medium"
                                                                                     >
                                                                                         Custom label
                                                                                     </button>
-                                                                                    {newLabel === 'with' && (
+                                                                                    {(newLabel === 'with' || newLabel === 'custom') && (
                                                                                         <input
                                                                                             type="text"
-                                                                                            placeholder="Enter name..."
-                                                                                            className="w-full text-xs bg-gray-700 text-white px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                                            placeholder={newLabel === 'with' ? "Enter name..." : "Custom label..."}
+                                                                                            className="w-full text-[10px] sm:text-xs bg-gray-700 text-white px-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                                                             onClick={e => e.stopPropagation()}
                                                                                             onKeyDown={e => {
                                                                                                 if (e.key === 'Enter' && e.currentTarget.value) {
-                                                                                                    handleAddLabel(movie.id, 'with', e.currentTarget.value);
-                                                                                                    setNewLabel('');
-                                                                                                }
-                                                                                            }}
-                                                                                        />
-                                                                                    )}
-                                                                                    {newLabel === 'custom' && (
-                                                                                        <input
-                                                                                            type="text"
-                                                                                            placeholder="Custom label..."
-                                                                                            className="w-full text-xs bg-gray-700 text-white px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                                                            onClick={e => e.stopPropagation()}
-                                                                                            onKeyDown={e => {
-                                                                                                if (e.key === 'Enter' && e.currentTarget.value) {
-                                                                                                    handleAddLabel(movie.id, 'custom', e.currentTarget.value);
+                                                                                                    handleAddLabel(movie.id, newLabel === 'with' ? 'with' : 'custom', e.currentTarget.value);
                                                                                                     setNewLabel('');
                                                                                                 }
                                                                                             }}
@@ -389,15 +382,16 @@ export default function WatchedMovies() {
                                                                                         e.stopPropagation();
                                                                                         setEditingLabels(movie.id);
                                                                                     }}
-                                                                                    className="w-full text-xs bg-white/10 hover:bg-white/15 text-white px-2 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 font-medium"
+                                                                                    className="w-full text-[10px] sm:text-xs bg-white/10 hover:bg-white/15 text-white px-2 py-2 rounded transition-colors flex items-center justify-center gap-1.5 font-medium"
                                                                                 >
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                                                                     </svg>
                                                                                     Add label
                                                                                 </button>
                                                                             )}
 
+                                                                            {/* Date editing with larger touch target */}
                                                                             {editingDate === movie.id ? (
                                                                                 <input
                                                                                     type="date"
@@ -414,7 +408,7 @@ export default function WatchedMovies() {
                                                                                             setTempDate('');
                                                                                         }
                                                                                     }}
-                                                                                    className="w-full text-xs bg-gray-700 text-white px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                                    className="w-full text-[10px] sm:text-xs bg-gray-700 text-white px-2 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                                                     onBlur={() => {
                                                                                         if (tempDate) {
                                                                                             handleDateUpdate(movie.id, tempDate);
@@ -427,9 +421,9 @@ export default function WatchedMovies() {
                                                                                         e.stopPropagation();
                                                                                         handleDateEditStart(movie.id, movie.watchedDate);
                                                                                     }}
-                                                                                    className="w-full text-xs bg-white/10 hover:bg-white/15 text-white px-2 py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 font-medium"
+                                                                                    className="w-full text-[10px] sm:text-xs bg-white/10 hover:bg-white/15 text-white px-2 py-2 rounded transition-colors flex items-center justify-center gap-1.5 font-medium"
                                                                                 >
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                                                     </svg>
                                                                                     Edit date

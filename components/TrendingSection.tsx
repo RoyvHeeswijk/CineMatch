@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { useWatched } from '@/context/WatchedContext';
 
 interface TrendingSectionProps {
     title: string;
@@ -23,6 +24,7 @@ const TrendingSection: React.FC<TrendingSectionProps> = ({
 }) => {
     const [showAllMovies, setShowAllMovies] = useState(false);
     const { isMobile } = useScreenSize();
+    const { isWatched } = useWatched();
 
     // Helper functions to handle different API response formats
     const getMoviePosterPath = (movie: any): string => {
@@ -72,31 +74,51 @@ const TrendingSection: React.FC<TrendingSectionProps> = ({
                                 </div>
                             )}
 
-                            {/* Rank badge - smaller on mobile */}
-                            <div className="absolute top-0.5 left-0.5 md:top-2 md:left-2 bg-blue-600/80 text-white px-1 md:px-2 py-0.5 rounded text-[8px] md:text-xs font-bold">
+                            {/* Rank badge - top left */}
+                            <div className="absolute top-2 left-2 bg-blue-600/80 text-white px-1.5 md:px-2 py-0.5 rounded text-[8px] md:text-xs font-bold">
                                 #{index + 1}
                             </div>
 
-                            {/* Rating badge - smaller on mobile */}
+                            {/* Rating badge - top right */}
                             {getMovieRating(item) > 0 && (
-                                <div className="absolute top-0.5 right-0.5 md:top-2 md:right-2 bg-yellow-600/80 text-white px-1 md:px-2 py-0.5 rounded text-[8px] md:text-xs">
+                                <div className="absolute top-2 right-2 bg-yellow-600/80 text-white px-1.5 md:px-2 py-0.5 rounded text-[8px] md:text-xs">
                                     ★ {getMovieRating(item)}
                                 </div>
                             )}
 
-                            {/* Like Button - smaller on mobile */}
-                            <button
-                                className={`absolute bottom-0.5 right-0.5 md:bottom-2 md:right-2 p-1 md:p-1.5 rounded-full transition-colors ${item.isInWishlist
-                                    ? 'bg-pink-600/90 text-white'
-                                    : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
-                                    }`}
-                                onClick={(e) => onLikeToggle(item, e)}
-                                aria-label={item.isInWishlist ? "Unlike" : "Like"}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 md:h-4 md:w-4" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                            </button>
+                            {/* Bottom gradient overlay */}
+                            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent"></div>
+
+                            {/* Action buttons container */}
+                            <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+                                {/* Watched indicator */}
+                                <div className="flex-shrink-0">
+                                    {isWatched(item.id) && (
+                                        <div className="bg-green-600/90 text-white p-1.5 rounded-full" title="Already watched">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Like Button */}
+                                <button
+                                    className={`flex-shrink-0 p-1.5 rounded-full transition-colors ${item.isInWishlist
+                                        ? 'bg-pink-600/90 text-white'
+                                        : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
+                                        }`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onLikeToggle(item, e);
+                                    }}
+                                    aria-label={item.isInWishlist ? "Unlike" : "Like"}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="p-1 md:p-3">

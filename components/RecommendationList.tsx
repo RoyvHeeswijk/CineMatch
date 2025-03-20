@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { useWishlist } from '@/context/WishlistContext';
+import { useWatched } from '@/context/WatchedContext';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { Movie } from '@/types/movie';
 import Image from 'next/image';
@@ -50,12 +51,14 @@ const MovieCard = memo(({
     movie,
     onViewDetails,
     onWishlistToggle,
-    isInWishlist
+    isInWishlist,
+    isWatched
 }: {
     movie: Movie;
     onViewDetails: (movie: Movie) => void;
     onWishlistToggle: (movie: Movie, e: React.MouseEvent) => void;
-    isInWishlist: boolean;
+    isInWishlist: (id: string) => boolean;
+    isWatched: (id: string) => boolean;
 }) => {
     return (
         <div className="flex-none w-[140px] sm:w-[180px] md:w-[220px] relative bg-black/40 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl border border-gray-800 movie-card">
@@ -78,27 +81,38 @@ const MovieCard = memo(({
                     {movie.rating} ★
                 </div>
 
-                {/* Wishlist button */}
-                <button
-                    onClick={(e) => onWishlistToggle(movie, e)}
-                    className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill={isInWishlist ? "currentColor" : "none"}
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        style={{ color: isInWishlist ? '#ec4899' : 'white' }}
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                    </svg>
-                </button>
+                {/* Bottom buttons */}
+                <div className="absolute bottom-0 left-0 right-0">
+                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent"></div>
+                    <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+                        {/* Watched indicator - bottom left */}
+                        {isWatched(movie.id) ? (
+                            <div className="bg-green-600/90 text-white p-1.5 rounded-full" title="Already watched">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        ) : (
+                            <div className="w-[28px]"></div>
+                        )}
+
+                        {/* Like button - bottom right */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onWishlistToggle(movie, e);
+                            }}
+                            className={`p-1.5 rounded-full transition-colors ${isInWishlist(movie.id)
+                                ? 'bg-pink-600/90 text-white'
+                                : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
+                                }`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill={isInWishlist(movie.id) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div className="p-3">
@@ -124,6 +138,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
     onSelectMovie
 }) => {
     const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { isWatched } = useWatched();
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
     const [movieDetails, setMovieDetails] = useState<any>(null);
     const [toast, setToast] = useState({ show: false, message: '', type: 'info' as const });
@@ -160,8 +175,6 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
         if (isLoading) {
             return (
                 <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
-
-
                     {/* Loading Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
                         {Array.from({ length: 12 }).map((_, index) => (
@@ -179,8 +192,6 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
 
         return (
             <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
-                
-
                 <div className="text-center py-12">
                     <div className="mx-auto w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-600/10 flex items-center justify-center mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -278,28 +289,37 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
                             </div>
 
                             {/* Like button - smaller and better styled for mobile */}
-                            <button
-                                onClick={(e) => handleLikeToggle(movie, e)}
-                                className={`absolute top-0.5 right-0.5 md:top-2 md:right-2 p-1 md:p-1.5 rounded-full transition-colors ${isInWishlist(movie.id)
-                                    ? 'bg-pink-600/90 text-white'
-                                    : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
-                                    }`}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-2.5 w-2.5 md:h-4 md:w-4"
-                                    fill={isInWishlist(movie.id) ? "currentColor" : "none"}
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
-                                </svg>
-                            </button>
+                            <div className="absolute bottom-0 left-0 right-0">
+                                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/80 to-transparent"></div>
+                                <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+                                    {/* Watched indicator - bottom left */}
+                                    {isWatched(movie.id) ? (
+                                        <div className="bg-green-600/90 text-white p-1.5 rounded-full" title="Already watched">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                    ) : (
+                                        <div className="w-[28px]"></div>
+                                    )}
+
+                                    {/* Like button */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleLikeToggle(movie, e);
+                                        }}
+                                        className={`p-1.5 rounded-full transition-colors ${isInWishlist(movie.id)
+                                            ? 'bg-pink-600/90 text-white'
+                                            : 'bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60'
+                                            }`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill={isInWishlist(movie.id) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="p-1 md:p-3">

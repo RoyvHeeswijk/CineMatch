@@ -11,14 +11,16 @@ interface Props {
 export default function MovieForm({ setRecommendations, setLoading }: Props) {
   const [userInput, setUserInput] = useState('');
   const [partialRecommendations, setPartialRecommendations] = useState<Movie[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInput.trim()) return;
 
     try {
+      // Set both loading states to true
       setLoading(true);
-      setRecommendations([]);
+      setRecommendations([]); // Clear previous recommendations
 
       const response = await fetch('/api/recommendations', {
         method: 'POST',
@@ -35,13 +37,18 @@ export default function MovieForm({ setRecommendations, setLoading }: Props) {
       }
 
       if (data.recommendations && data.recommendations.length > 0) {
-        setRecommendations(data.recommendations);
+        const uniqueRecommendations = data.recommendations.filter((movie: any, index: number, self: any[]) =>
+          index === self.findIndex((m: any) => m.id === movie.id)
+        );
+        setRecommendations(uniqueRecommendations);
       }
     } catch (err) {
-      console.error('Error:', err);
-      // Optionally show an error toast to the user
+      console.error('Error fetching recommendations:', err);
+      setError('Failed to get movie recommendations. Please try again.');
+      setRecommendations([]); // Clear recommendations on error
     } finally {
-      setLoading(false);
+      setLoading(false); // Make sure to set loading to false when done
+      setUserInput('');
     }
   };
 
@@ -62,9 +69,15 @@ export default function MovieForm({ setRecommendations, setLoading }: Props) {
           className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-medium py-2.5 md:py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-cyan-500/25"
           disabled={!userInput.trim()}
         >
-          {userInput.trim() ? 'Finding Movies...' : 'Find My Movies'}
+          {!userInput.trim() ? 'Find My Movies' : 'Finding Movies...'}
         </button>
       </div>
+
+      {error && (
+        <div className="text-red-400 text-sm mt-2 text-center">
+          {error}
+        </div>
+      )}
     </form>
   );
 } 

@@ -561,21 +561,29 @@ export default function Home() {
                                         </svg>
                                         {isInWishlist(selectedMovie.id) ? 'Unlike' : 'Like This Movie'}
                                     </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleWatchedToggle(selectedMovie);
-                                        }}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isWatched(selectedMovie.id)
-                                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                                            : 'bg-white/10 hover:bg-white/20 text-white'
-                                            }`}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                        {isWatched(selectedMovie.id) ? 'Unmark as Watched' : 'Mark as Watched'}
-                                    </button>
+
+                                    {/* Watched indicator */}
+                                    {isWatched(selectedMovie.id) ? (
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600/20 text-green-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                            Watched
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleWatchedToggle(selectedMovie);
+                                            }}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                            Mark as Watched
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
