@@ -1,17 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface WatchedMovie {
+type Label = {
+    type: 'alone' | 'with' | 'custom';
+    text: string;
+};
+
+type WatchedMovie = {
     id: string;
     title: string;
     posterPath: string;
     watchedDate: string;
-}
+    labels?: Label[];
+};
 
 interface WatchedContextType {
     watchedMovies: WatchedMovie[];
     addToWatched: (movie: WatchedMovie) => void;
     removeFromWatched: (movieId: string) => void;
     updateWatchedDate: (movieId: string, newDate: string) => void;
+    updateWatchedMovie: (movieId: string, updatedMovie: WatchedMovie) => void;
     isWatched: (movieId: string) => boolean;
     clearWatched: () => void;
     watchedCount: number;
@@ -51,6 +58,17 @@ export const WatchedProvider: React.FC<{ children: React.ReactNode }> = ({ child
         ));
     };
 
+    const updateWatchedMovie = (movieId: string, updatedMovie: WatchedMovie) => {
+        setWatchedMovies(prev => {
+            const updated = prev.map(movie =>
+                movie.id === movieId ? updatedMovie : movie
+            );
+            // Update localStorage
+            localStorage.setItem('watchedMovies', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
     const isWatched = (movieId: string) => {
         return watchedMovies.some(movie => movie.id === movieId);
     };
@@ -65,6 +83,7 @@ export const WatchedProvider: React.FC<{ children: React.ReactNode }> = ({ child
             addToWatched,
             removeFromWatched,
             updateWatchedDate,
+            updateWatchedMovie,
             isWatched,
             clearWatched,
             watchedCount: watchedMovies.length
