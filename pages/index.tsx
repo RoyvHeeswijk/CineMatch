@@ -6,12 +6,15 @@ import Head from 'next/head';
 import { useWishlist } from '@/context/WishlistContext';
 import Toast from '@/components/Toast';
 import WishlistModal from '@/components/WishlistModal';
+import WatchedMoviesModal from '@/components/WatchedMoviesModal';
+import { useWatched } from '@/context/WatchedContext';
 
 export default function Home() {
     const [recommendations, setRecommendations] = useState<any[]>([]);
     const [trendingMovies, setTrendingMovies] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const { wishlistCount, addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+    const { addToWatched, removeFromWatched, isWatched } = useWatched();
     const [toast, setToast] = useState<{
         show: boolean;
         message: string;
@@ -26,6 +29,9 @@ export default function Home() {
     // State for movie details modal
     const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
     const [movieDetails, setMovieDetails] = useState<any>(null);
+
+    // Add state for watched movies modal
+    const [showWatchedMovies, setShowWatchedMovies] = useState(false);
 
     useEffect(() => {
         // Fetch trending movies when the page loads
@@ -163,6 +169,36 @@ export default function Home() {
         }
     };
 
+    // Add this handler function with your other handlers
+    const handleWatchedToggle = (movie: any, e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation();
+        }
+
+        const movieData = {
+            id: movie.id,
+            title: movie.title,
+            posterPath: getMoviePosterPath(movie),
+            watchedDate: new Date().toISOString()
+        };
+
+        if (isWatched(movie.id)) {
+            removeFromWatched(movie.id);
+            setToast({
+                show: true,
+                message: `${movie.title} removed from watched movies`,
+                type: 'info'
+            });
+        } else {
+            addToWatched(movieData);
+            setToast({
+                show: true,
+                message: `${movie.title} added to watched movies`,
+                type: 'success'
+            });
+        }
+    };
+
     return (
         <>
             <Head>
@@ -191,26 +227,37 @@ export default function Home() {
                         <h1 className="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
                             CineMatch
                         </h1>
-                        <button
-                            onClick={() => setShowWishlist(true)}
-                            className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 md:h-5 md:w-5 text-pink-500"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setShowWatchedMovies(true)}
+                                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                />
-                            </svg>
-                            <span>Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}</span>
-                        </button>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                <span>Watched Movies</span>
+                            </button>
+                            <button
+                                onClick={() => setShowWishlist(true)}
+                                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4 md:h-5 md:w-5 text-pink-500"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                    />
+                                </svg>
+                                <span>Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Main content - adjust layout for mobile */}
@@ -362,6 +409,13 @@ export default function Home() {
                 />
             )}
 
+            {showWatchedMovies && (
+                <WatchedMoviesModal
+                    isOpen={showWatchedMovies}
+                    onClose={() => setShowWatchedMovies(false)}
+                />
+            )}
+
             {/* Full-screen movie details modal */}
             {selectedMovie && (
                 <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
@@ -489,22 +543,37 @@ export default function Home() {
                                     </div>
                                 )}
 
-                                {/* Like button */}
-                                <div className="mt-6">
+                                {/* Like and Watched buttons */}
+                                <div className="mt-6 flex gap-3">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleLikeToggle(selectedMovie);
                                         }}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isInWishlist(selectedMovie.id)
-                                            ? 'bg-pink-600 hover:bg-pink-700 text-white'
-                                            : 'bg-white/10 hover:bg-white/20 text-white'
+                                                ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                                                : 'bg-white/10 hover:bg-white/20 text-white'
                                             }`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                         </svg>
                                         {isInWishlist(selectedMovie.id) ? 'Unlike' : 'Like This Movie'}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleWatchedToggle(selectedMovie);
+                                        }}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isWatched(selectedMovie.id)
+                                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                                : 'bg-white/10 hover:bg-white/20 text-white'
+                                            }`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        {isWatched(selectedMovie.id) ? 'Unmark as Watched' : 'Mark as Watched'}
                                     </button>
                                 </div>
                             </div>
