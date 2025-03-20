@@ -74,7 +74,6 @@ export default function Home() {
     }, [recommendations]);
 
     const handleSubmit = async (input: string) => {
-        // Set loading state to true immediately when button is clicked
         setIsLoading(true);
         setRecommendations([]); // Clear previous recommendations
 
@@ -94,12 +93,15 @@ export default function Home() {
             const data = await response.json();
 
             if (data.recommendations && data.recommendations.length > 0) {
-                setRecommendations(data.recommendations);
+                // Remove duplicates based on movie ID
+                const uniqueRecommendations = data.recommendations.filter((movie: any, index: number, self: any[]) =>
+                    index === self.findIndex((m: any) => m.id === movie.id)
+                );
+                setRecommendations(uniqueRecommendations);
             }
         } catch (err) {
             console.error('Error fetching recommendations:', err);
         } finally {
-            // Set loading state to false after response is received
             setIsLoading(false);
         }
     };
