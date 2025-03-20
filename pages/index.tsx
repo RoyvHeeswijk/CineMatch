@@ -8,6 +8,7 @@ import Toast from '@/components/Toast';
 import WishlistModal from '@/components/WishlistModal';
 import WatchedMoviesModal from '@/components/WatchedMoviesModal';
 import { useWatched } from '@/context/WatchedContext';
+import Link from 'next/link';
 
 export default function Home() {
     const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -228,15 +229,15 @@ export default function Home() {
                             CineMatch
                         </h1>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setShowWatchedMovies(true)}
+                            <Link
+                                href="/watched"
                                 className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
                                 <span>Watched Movies</span>
-                            </button>
+                            </Link>
                             <button
                                 onClick={() => setShowWishlist(true)}
                                 className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
@@ -551,8 +552,8 @@ export default function Home() {
                                             handleLikeToggle(selectedMovie);
                                         }}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isInWishlist(selectedMovie.id)
-                                                ? 'bg-pink-600 hover:bg-pink-700 text-white'
-                                                : 'bg-white/10 hover:bg-white/20 text-white'
+                                            ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                                            : 'bg-white/10 hover:bg-white/20 text-white'
                                             }`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
@@ -566,8 +567,8 @@ export default function Home() {
                                             handleWatchedToggle(selectedMovie);
                                         }}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isWatched(selectedMovie.id)
-                                                ? 'bg-green-600 hover:bg-green-700 text-white'
-                                                : 'bg-white/10 hover:bg-white/20 text-white'
+                                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                                            : 'bg-white/10 hover:bg-white/20 text-white'
                                             }`}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
