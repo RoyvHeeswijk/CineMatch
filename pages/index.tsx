@@ -231,20 +231,22 @@ export default function Home() {
                         <div className="flex items-center gap-2">
                             <Link
                                 href="/watched"
-                                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
+                                className="flex items-center justify-center w-10 h-10 md:w-auto md:h-auto bg-white/10 hover:bg-white/15 px-2 md:px-4 py-1.5 md:py-2 rounded-full transition-colors"
+                                title="Watched Movies"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-5 md:w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span>Watched Movies</span>
+                                <span className="hidden md:inline ml-2">Watched Movies</span>
                             </Link>
                             <button
                                 onClick={() => setShowWishlist(true)}
-                                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3 md:px-4 py-1.5 md:py-2 rounded-full transition-colors text-sm md:text-base"
+                                className="flex items-center justify-center w-10 h-10 md:w-auto md:h-auto bg-white/10 hover:bg-white/15 px-2 md:px-4 py-1.5 md:py-2 rounded-full transition-colors relative"
+                                title="Liked Movies"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 md:h-5 md:w-5 text-pink-500"
+                                    className="h-5 w-5 md:h-5 md:w-5 text-pink-500"
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
@@ -256,7 +258,13 @@ export default function Home() {
                                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                     />
                                 </svg>
-                                <span>Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}</span>
+                                <span className="hidden md:inline ml-2">
+                                    Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}
+                                </span>
+                                {/* Show count badge on mobile if there are liked movies */}
+                                {wishlistCount > 0 && (
+                                    <span className="md:hidden absolute -top-1 -right-1 bg-pink-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{wishlistCount}</span>
+                                )}
                             </button>
                         </div>
                     </div>

@@ -88,9 +88,9 @@ async function fetchTMDBDataWithUserPreferences(recommendations: any[], userPref
                     year: movie.releaseYear // Use release year if available
                 }
             });
-            
+
             const searchResults = searchResponse.data.results;
-            
+
             // If no results found, return original recommendation with better fallback handling
             if (!searchResults || searchResults.length === 0) {
                 return {
@@ -100,11 +100,11 @@ async function fetchTMDBDataWithUserPreferences(recommendations: any[], userPref
                     tmdbMatched: false
                 };
             }
-            
+
             // Get the first (most relevant) result
             const tmdbMovie = searchResults[0];
             const tmdbId = tmdbMovie.id;
-            
+
             // Get detailed movie information
             const detailsResponse = await axios.get(`${TMDB_API_BASE}/movie/${tmdbId}`, {
                 params: {
@@ -112,58 +112,58 @@ async function fetchTMDBDataWithUserPreferences(recommendations: any[], userPref
                     append_to_response: 'credits,watch/providers'
                 }
             });
-            
+
             const movieDetails = detailsResponse.data;
-            
+
             // Extract streaming providers
             const watchProviders = movieDetails['watch/providers']?.results?.US?.flatrate || [];
             const streamingServices = watchProviders.map((provider: any) => provider.provider_name);
-            
+
             // Handle preferences text-based matching
             let isOnPreferredService = false;
             let genreMatchScore = 0;
-            
+
             if (userPreferences.preferences) {
                 const preferencesLower = userPreferences.preferences.toLowerCase();
-                
+
                 // Check for streaming services mentions in preferences
                 const commonStreamingServices = ['netflix', 'hulu', 'disney', 'amazon', 'prime', 'hbo', 'max', 'paramount', 'apple'];
-                const mentionedServices = commonStreamingServices.filter(service => 
+                const mentionedServices = commonStreamingServices.filter(service =>
                     preferencesLower.includes(service)
                 );
-                
+
                 if (mentionedServices.length > 0) {
-                    isOnPreferredService = streamingServices.some(service => 
-                        mentionedServices.some(mentioned => 
+                    isOnPreferredService = streamingServices.some(service =>
+                        mentionedServices.some(mentioned =>
                             service.toLowerCase().includes(mentioned)
                         )
                     );
                 }
-                
+
                 // Extract potential genres from preferences text
-                const commonGenres = ['action', 'comedy', 'drama', 'horror', 'thriller', 'sci-fi', 'science fiction', 
-                                     'romance', 'documentary', 'animation', 'adventure', 'fantasy', 'mystery'];
-                const mentionedGenres = commonGenres.filter(genre => 
+                const commonGenres = ['action', 'comedy', 'drama', 'horror', 'thriller', 'sci-fi', 'science fiction',
+                    'romance', 'documentary', 'animation', 'adventure', 'fantasy', 'mystery'];
+                const mentionedGenres = commonGenres.filter(genre =>
                     preferencesLower.includes(genre)
                 );
-                
+
                 if (mentionedGenres.length > 0 && movieDetails.genres) {
                     const movieGenres = movieDetails.genres.map((g: any) => g.name.toLowerCase());
-                    const matchingGenres = mentionedGenres.filter(genre => 
+                    const matchingGenres = mentionedGenres.filter(genre =>
                         movieGenres.some(mg => mg.includes(genre) || genre.includes(mg))
                     );
-                    
+
                     genreMatchScore = matchingGenres.length / mentionedGenres.length;
                 }
             }
-            
+
             // Format data consistently
             return {
                 ...movie,
                 id: `tmdb-${tmdbId}`,
                 tmdbId: tmdbId.toString(),
                 title: movieDetails.title,
-                posterPath: movieDetails.poster_path 
+                posterPath: movieDetails.poster_path
                     ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
                     : movie.posterPath,
                 releaseDate: movieDetails.release_date || movie.releaseDate,
@@ -180,10 +180,10 @@ async function fetchTMDBDataWithUserPreferences(recommendations: any[], userPref
                 tmdbMatched: true
             };
         }));
-        
+
         // Return recommendations with consistent structure
         return enhancedRecommendations;
-        
+
     } catch (error) {
         console.error('Error fetching TMDB data:', error);
         // Return original recommendations with minimal formatting to ensure they display properly
@@ -226,12 +226,12 @@ export default async function handler(
         });
 
         const responseContent = completion.choices[0].message.content;
-        
+
         try {
             // Parse the JSON response
             const parsedResponse = JSON.parse(responseContent || '{}');
             let recommendations = parsedResponse.recommendations || [];
-            
+
             // Ensure we have at least some recommendations
             if (recommendations.length === 0) {
                 console.warn('No recommendations returned from AI, using backup method');
@@ -250,7 +250,7 @@ export default async function handler(
                             });
                             return searchResponse.data.results.slice(0, 3);
                         }));
-                        
+
                         // Flatten and deduplicate results
                         const flatResults = fallbackResults.flat();
                         const uniqueIds = new Set();
@@ -274,21 +274,21 @@ export default async function handler(
                     }
                 }
             }
-            
+
             // First add user input to recommendations for context
             const recommendationsWithContext = recommendations.map((movie: any) => ({
                 ...movie,
                 userInput: userInput // Store the original user input with each recommendation
             }));
-            
+
             // Then enhance with TMDB data
             const enhancedRecommendations = await fetchTMDBDataWithUserInput(
-                recommendationsWithContext, 
+                recommendationsWithContext,
                 userInput
             );
-            
+
             return res.status(200).json({ recommendations: enhancedRecommendations });
-            
+
         } catch (error) {
             console.error('Error parsing AI response:', error);
             return res.status(500).json({ error: 'Failed to parse recommendations' });
@@ -304,17 +304,17 @@ async function fetchTMDBDataWithUserInput(recommendations: any[], userInput: str
     try {
         // Extract useful information from user input for matching
         const userInputLower = userInput.toLowerCase();
-        
+
         // Common streaming services to look for in the input
         const streamingServices = ['netflix', 'hulu', 'disney+', 'amazon prime', 'hbo max', 'apple tv+', 'paramount+'];
         const mentionedServices = streamingServices.filter(service => userInputLower.includes(service.toLowerCase()));
-        
+
         // Common genres to look for in the input
-        const genres = ['action', 'adventure', 'animation', 'comedy', 'crime', 'documentary', 'drama', 'family', 
-                        'fantasy', 'history', 'horror', 'music', 'mystery', 'romance', 'science fiction', 'sci-fi',
-                        'thriller', 'war', 'western'];
+        const genres = ['action', 'adventure', 'animation', 'comedy', 'crime', 'documentary', 'drama', 'family',
+            'fantasy', 'history', 'horror', 'music', 'mystery', 'romance', 'science fiction', 'sci-fi',
+            'thriller', 'war', 'western'];
         const mentionedGenres = genres.filter(genre => userInputLower.includes(genre.toLowerCase()));
-        
+
         // Map through recommendations and fetch enhanced data from TMDB
         const enhancedRecommendations = await Promise.all(recommendations.map(async (movie) => {
             try {
@@ -326,9 +326,9 @@ async function fetchTMDBDataWithUserInput(recommendations: any[], userInput: str
                         year: movie.releaseYear || new Date(movie.releaseDate).getFullYear() // Use release year if available
                     }
                 });
-                
+
                 const searchResults = searchResponse.data.results;
-                
+
                 // If no results found, return original recommendation
                 if (!searchResults || searchResults.length === 0) {
                     return {
@@ -343,11 +343,11 @@ async function fetchTMDBDataWithUserInput(recommendations: any[], userInput: str
                         }
                     };
                 }
-                
+
                 // Get the first (most relevant) result
                 const tmdbMovie = searchResults[0];
                 const tmdbId = tmdbMovie.id;
-                
+
                 // Get detailed movie information
                 const detailsResponse = await axios.get(`${TMDB_API_BASE}/movie/${tmdbId}`, {
                     params: {
@@ -355,39 +355,39 @@ async function fetchTMDBDataWithUserInput(recommendations: any[], userInput: str
                         append_to_response: 'credits,watch/providers'
                     }
                 });
-                
+
                 const movieDetails = detailsResponse.data;
-                
+
                 // Extract streaming providers
                 const watchProviders = movieDetails['watch/providers']?.results?.US?.flatrate || [];
                 const streamingServices = watchProviders.map((provider: any) => provider.provider_name);
-                
+
                 // Check if movie is available on any of the mentioned streaming services
-                const isOnMentionedService = mentionedServices.length > 0 ? 
-                    streamingServices.some(service => 
-                        mentionedServices.some(mentioned => 
+                const isOnMentionedService = mentionedServices.length > 0 ?
+                    streamingServices.some(service =>
+                        mentionedServices.some(mentioned =>
                             service.toLowerCase().includes(mentioned)
                         )
                     ) : false;
-                
+
                 // Check genre matches
                 let genreMatchScore = 0;
                 if (mentionedGenres.length > 0 && movieDetails.genres) {
                     const movieGenres = movieDetails.genres.map((g: any) => g.name.toLowerCase());
-                    const matchingGenres = mentionedGenres.filter(genre => 
+                    const matchingGenres = mentionedGenres.filter(genre =>
                         movieGenres.some(mg => mg.includes(genre) || genre.includes(mg))
                     );
-                    
+
                     genreMatchScore = matchingGenres.length / mentionedGenres.length;
                 }
-                
+
                 // Format data consistently
                 return {
                     ...movie,
                     id: `tmdb-${tmdbId}`,
                     tmdbId: tmdbId.toString(),
                     title: movieDetails.title,
-                    posterPath: movieDetails.poster_path 
+                    posterPath: movieDetails.poster_path
                         ? `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`
                         : movie.posterPath,
                     releaseDate: movieDetails.release_date || movie.releaseDate,
@@ -422,7 +422,7 @@ async function fetchTMDBDataWithUserInput(recommendations: any[], userInput: str
                 };
             }
         }));
-        
+
         return enhancedRecommendations;
     } catch (error) {
         console.error('Error processing with TMDB:', error);
@@ -442,20 +442,20 @@ async function fetchTMDBDataWithBatching(recommendations: any[], userInput: stri
     // Process in batches of 3 to avoid overwhelming TMDB API
     const batchSize = 3;
     const enhancedRecommendations = [];
-    
+
     for (let i = 0; i < recommendations.length; i += batchSize) {
         const batch = recommendations.slice(i, i + batchSize);
         const batchResults = await Promise.all(
             batch.map(movie => enhanceMovieWithTMDB(movie, userInput))
         );
         enhancedRecommendations.push(...batchResults);
-        
+
         // Small delay between batches to respect rate limits
         if (i + batchSize < recommendations.length) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
     }
-    
+
     return enhancedRecommendations;
 }
 
@@ -469,7 +469,7 @@ async function enhanceMovieWithTMDB(movie, userInput) {
                 query: movie.title,
             }
         });
-        
+
         if (!searchResponse.data.results.length) {
             return {
                 ...movie,
@@ -477,15 +477,15 @@ async function enhanceMovieWithTMDB(movie, userInput) {
                 posterPath: null
             };
         }
-        
+
         const tmdbMovie = searchResponse.data.results[0];
-        
+
         // Return with just essential data first
         return {
             ...movie,
             id: `tmdb-${tmdbMovie.id}`,
             tmdbId: tmdbMovie.id.toString(),
-            posterPath: tmdbMovie.poster_path ? 
+            posterPath: tmdbMovie.poster_path ?
                 `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` : null,
             releaseDate: tmdbMovie.release_date || movie.releaseDate,
             rating: tmdbMovie.vote_average.toString()
