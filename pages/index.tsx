@@ -212,33 +212,39 @@ export default function Home() {
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
             </Head>
 
-            <main className="min-h-screen bg-[#0A0F1C] text-white font-['Inter']">
+            <main className="min-h-screen bg-[#111827] text-white font-['Inter']">
                 {/* Top Navigation Bar */}
-                <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F1729]/80 backdrop-blur-lg border-b border-white/10">
-                    <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1F2937]/95 backdrop-blur-lg border-b border-[#374151]">
+                    <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                        <h1 className="text-2xl font-bold text-white">
                             CineMatch
+                            <span className="ml-2 text-sm font-normal text-indigo-400">AI Movie Finder</span>
                         </h1>
 
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/watched"
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1A2333] hover:bg-[#1E293D] transition-colors"
+                                className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#374151] hover:bg-[#4B5563] transition-all duration-200 text-emerald-400 hover:text-emerald-300"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                Watched
+                                <span className="font-medium">Watched</span>
                             </Link>
 
                             <button
                                 onClick={() => setShowWishlist(true)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1A2333] hover:bg-[#1E293D] transition-colors"
+                                className="flex items-center gap-2 px-5 py-2 rounded-full bg-[#374151] hover:bg-[#4B5563] transition-all duration-200 text-rose-400 hover:text-rose-300"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-400" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
-                                Liked {wishlistCount > 0 && <span className="ml-1 px-2 py-0.5 bg-pink-500/20 text-pink-300 rounded-full text-xs">{wishlistCount}</span>}
+                                <span className="font-medium">Liked</span>
+                                {wishlistCount > 0 && (
+                                    <span className="ml-1 px-2 py-0.5 bg-rose-500/20 text-rose-300 rounded-full text-xs font-bold">
+                                        {wishlistCount}
+                                    </span>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -246,29 +252,43 @@ export default function Home() {
 
                 {/* Main Content */}
                 <div className="pt-16">
-                    {/* Hero Section with Search */}
-                    <div className="relative bg-gradient-to-b from-[#0F1729] to-[#0A0F1C] border-b border-white/10">
-                        <div className="max-w-[1600px] mx-auto px-6 py-16">
-                            <div className="flex gap-12 items-center">
-                                <div className="flex-1 max-w-2xl">
-                                    <h2 className="text-5xl font-bold mb-6 leading-tight">
-                                        Find Your Perfect
-                                        <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                            Movie Match
-                                        </span>
-                                    </h2>
-                                    <p className="text-lg text-gray-400 mb-8">
-                                        Tell us what you love, and we'll find the perfect movies for you using AI-powered recommendations.
-                                    </p>
-                                    <div className="bg-[#1A2333] rounded-2xl p-6 border border-white/10">
+                    {/* Hero Section */}
+                    <div className="relative bg-gradient-to-b from-[#1F2937] to-[#111827] border-b border-[#374151]">
+                        <div className="max-w-7xl mx-auto px-6 py-16">
+                            <div className="flex flex-col lg:flex-row gap-12">
+                                {/* Left Content */}
+                                <div className="flex-1">
+                                    {/* Text content */}
+                                    <div className="mb-6">
+                                        <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-4">
+                                            Find Your Next
+                                            <span className="block text-indigo-400">
+                                                Movie Adventure
+                                            </span>
+                                        </h2>
+                                        <p className="text-base text-gray-300">
+                                            Tell us what you love, and our AI will curate the perfect movie recommendations just for you.
+                                        </p>
+                                    </div>
+
+                                    {/* Search Box - with fixed height */}
+                                    <div className="bg-[#1F2937] rounded-2xl p-6 border border-[#374151] shadow-xl">
+                                        <h3 className="text-lg font-semibold mb-4 flex items-center text-white">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
+                                            Describe Your Perfect Movie
+                                        </h3>
                                         <MovieForm setRecommendations={setRecommendations} setLoading={setIsLoading} />
                                     </div>
                                 </div>
+
+                                {/* Right Decorative Element - Height matches left content */}
                                 <div className="flex-1 hidden lg:block">
-                                    <div className="relative h-[400px] w-full">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl backdrop-blur-3xl"></div>
-                                        <div className="absolute -top-8 -right-8 w-72 h-72 bg-blue-500/30 rounded-full filter blur-3xl"></div>
-                                        <div className="absolute -bottom-8 -left-8 w-72 h-72 bg-purple-500/30 rounded-full filter blur-3xl"></div>
+                                    <div className="relative w-full" style={{ height: 'calc(100% - 1.5rem)' }}> {/* Subtracting margin */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-rose-500/20 rounded-2xl backdrop-blur-3xl"></div>
+                                        <div className="absolute -top-8 -right-8 w-72 h-72 bg-indigo-500/30 rounded-full filter blur-3xl"></div>
+                                        <div className="absolute -bottom-8 -left-8 w-72 h-72 bg-rose-500/30 rounded-full filter blur-3xl"></div>
                                     </div>
                                 </div>
                             </div>
@@ -276,10 +296,10 @@ export default function Home() {
                     </div>
 
                     {/* Content Sections */}
-                    <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-12">
+                    <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
                         {/* Recommendations Section */}
                         <section id="recommendations-section">
-                            <div className="bg-[#1A2333] rounded-2xl overflow-hidden shadow-xl border border-white/10">
+                            <div className="bg-[#1F2937] rounded-2xl overflow-hidden shadow-xl border border-[#374151]">
                                 <div className="p-6">
                                     <RecommendationList
                                         recommendations={recommendations}
@@ -292,7 +312,7 @@ export default function Home() {
 
                         {/* Trending Section */}
                         <section>
-                            <div className="bg-[#1A2333] rounded-2xl overflow-hidden shadow-xl border border-white/10">
+                            <div className="bg-[#1F2937] rounded-2xl overflow-hidden shadow-xl border border-[#374151]">
                                 <div className="p-6">
                                     <TrendingSection
                                         title="Top 10 Movies This Week"
@@ -308,8 +328,8 @@ export default function Home() {
                     </div>
 
                     {/* Footer */}
-                    <footer className="bg-[#0F1729] border-t border-white/10">
-                        <div className="max-w-[1600px] mx-auto px-6 py-8">
+                    <footer className="bg-[#1F2937] border-t border-[#374151]">
+                        <div className="max-w-7xl mx-auto px-6 py-8">
                             <div className="flex items-center justify-between">
                                 <p className="text-sm text-gray-400">
                                     © {new Date().getFullYear()} CineMatch
