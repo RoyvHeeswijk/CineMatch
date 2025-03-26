@@ -212,101 +212,88 @@ export default function Home() {
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
             </Head>
 
-            <main className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white font-['Inter']">
-                {/* Background elements - hide on mobile */}
-                <div className="absolute inset-0 overflow-hidden hidden md:block">
-                    <div className="stars-container"></div>
-                </div>
-
-                <div className="fixed top-1/4 -left-40 w-96 h-96 bg-blue-500/30 rounded-full hidden md:block"></div>
-                <div className="fixed top-1/2 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full hidden md:block"></div>
-                <div className="fixed bottom-1/4 left-1/3 w-64 h-64 bg-cyan-500/20 rounded-full hidden md:block"></div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
-                    {/* Header with logo and wishlist */}
-                    <div className="flex items-center justify-between mb-8">
-                        <h1 className="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+            <main className="min-h-screen bg-[#0A0F1C] text-white font-['Inter']">
+                {/* Top Navigation Bar */}
+                <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0F1729]/80 backdrop-blur-lg border-b border-white/10">
+                    <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                             CineMatch
                         </h1>
-                        <div className="flex items-center gap-2">
+
+                        <div className="flex items-center gap-4">
                             <Link
                                 href="/watched"
-                                className="flex items-center justify-center w-10 h-10 md:w-auto md:h-auto bg-white/10 hover:bg-white/15 px-2 md:px-4 py-1.5 md:py-2 rounded-full transition-colors"
-                                title="Watched Movies"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1A2333] hover:bg-[#1E293D] transition-colors"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-5 md:w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span className="hidden md:inline ml-2">Watched Movies</span>
+                                Watched
                             </Link>
+
                             <button
                                 onClick={() => setShowWishlist(true)}
-                                className="flex items-center justify-center w-10 h-10 md:w-auto md:h-auto bg-white/10 hover:bg-white/15 px-2 md:px-4 py-1.5 md:py-2 rounded-full transition-colors relative"
-                                title="Liked Movies"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1A2333] hover:bg-[#1E293D] transition-colors"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5 md:h-5 md:w-5 text-pink-500"
-                                    fill="currentColor"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-400" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
-                                <span className="hidden md:inline ml-2">
-                                    Liked Movies {wishlistCount > 0 && <span className="bg-pink-600 text-white text-xs px-1.5 rounded-full ml-1">{wishlistCount}</span>}
-                                </span>
-                                {/* Show count badge on mobile if there are liked movies */}
-                                {wishlistCount > 0 && (
-                                    <span className="md:hidden absolute -top-1 -right-1 bg-pink-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{wishlistCount}</span>
-                                )}
+                                Liked {wishlistCount > 0 && <span className="ml-1 px-2 py-0.5 bg-pink-500/20 text-pink-300 rounded-full text-xs">{wishlistCount}</span>}
                             </button>
                         </div>
                     </div>
+                </nav>
 
-                    {/* Main content - adjust layout for mobile */}
-                    <div className="mt-4 md:mt-8">
-                        <div className="flex flex-col lg:flex-row lg:gap-8">
-                            <div className="w-full lg:w-1/3 mb-4 lg:mb-0">
-                                <div className="bg-white/5 p-3 md:p-6 rounded-xl md:rounded-2xl shadow-xl border border-white/10">
-                                    <h2 className="text-base md:text-xl font-bold mb-3 md:mb-6 text-white flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5 mr-1.5 md:mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                        </svg>
-                                        Find Your Perfect Movie
+                {/* Main Content */}
+                <div className="pt-16">
+                    {/* Hero Section with Search */}
+                    <div className="relative bg-gradient-to-b from-[#0F1729] to-[#0A0F1C] border-b border-white/10">
+                        <div className="max-w-[1600px] mx-auto px-6 py-16">
+                            <div className="flex gap-12 items-center">
+                                <div className="flex-1 max-w-2xl">
+                                    <h2 className="text-5xl font-bold mb-6 leading-tight">
+                                        Find Your Perfect
+                                        <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                            Movie Match
+                                        </span>
                                     </h2>
-                                    <MovieForm setRecommendations={setRecommendations} setLoading={setIsLoading} />
-                                </div>
-                            </div>
-
-                            <div className="w-full lg:w-2/3 space-y-4 md:space-y-8">
-                                {/* Recommendations Section */}
-                                <div id="recommendations-section" className="scroll-mt-16">
-                                    <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
-                                        <div className="flex items-center mb-6">
-                                            <div className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg px-3 py-1 text-white text-sm font-semibold mr-3">
-                                                RECOMMENDED
-                                            </div>
-                                            <h2 className="text-xl md:text-2xl font-bold text-white">
-                                                {isLoading ? "Finding Recommendations..." : "Your Movie Recommendations"}
-                                            </h2>
-                                        </div>
-
-                                        <RecommendationList
-                                            recommendations={recommendations}
-                                            isLoading={isLoading}
-                                            onSelectMovie={setSelectedMovie}
-                                        />
+                                    <p className="text-lg text-gray-400 mb-8">
+                                        Tell us what you love, and we'll find the perfect movies for you using AI-powered recommendations.
+                                    </p>
+                                    <div className="bg-[#1A2333] rounded-2xl p-6 border border-white/10">
+                                        <MovieForm setRecommendations={setRecommendations} setLoading={setIsLoading} />
                                     </div>
                                 </div>
+                                <div className="flex-1 hidden lg:block">
+                                    <div className="relative h-[400px] w-full">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl backdrop-blur-3xl"></div>
+                                        <div className="absolute -top-8 -right-8 w-72 h-72 bg-blue-500/30 rounded-full filter blur-3xl"></div>
+                                        <div className="absolute -bottom-8 -left-8 w-72 h-72 bg-purple-500/30 rounded-full filter blur-3xl"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                {/* Trending Section with Clear Heading */}
-                                <div className="bg-white/5 p-6 rounded-2xl shadow-xl border border-white/10">
+                    {/* Content Sections */}
+                    <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-12">
+                        {/* Recommendations Section */}
+                        <section id="recommendations-section">
+                            <div className="bg-[#1A2333] rounded-2xl overflow-hidden shadow-xl border border-white/10">
+                                <div className="p-6">
+                                    <RecommendationList
+                                        recommendations={recommendations}
+                                        isLoading={isLoading}
+                                        onSelectMovie={setSelectedMovie}
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Trending Section */}
+                        <section>
+                            <div className="bg-[#1A2333] rounded-2xl overflow-hidden shadow-xl border border-white/10">
+                                <div className="p-6">
                                     <TrendingSection
                                         title="Top 10 Movies This Week"
                                         description="Most popular movies right now"
@@ -317,12 +304,21 @@ export default function Home() {
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </section>
                     </div>
 
                     {/* Footer */}
-                    <footer className="text-center text-blue-300/50 py-6">
-                        <p>© {new Date().getFullYear()} CineMatch • Powered by TMDB & OpenAI</p>
+                    <footer className="bg-[#0F1729] border-t border-white/10">
+                        <div className="max-w-[1600px] mx-auto px-6 py-8">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-gray-400">
+                                    © {new Date().getFullYear()} CineMatch
+                                </p>
+                                <p className="text-sm text-gray-400">
+                                    Powered by TMDB & OpenAI
+                                </p>
+                            </div>
+                        </div>
                     </footer>
                 </div>
             </main>
