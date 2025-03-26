@@ -76,17 +76,20 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
       <div className="min-h-screen flex items-center justify-center p-4">
         {/* Modal Content */}
         <div
-          className="bg-gradient-to-b from-gray-900 to-blue-900/90 rounded-xl overflow-hidden shadow-2xl w-full max-w-4xl animate-scaleIn"
+          className="bg-[#1F2937] rounded-2xl overflow-hidden shadow-2xl w-full max-w-5xl animate-scaleIn border border-[#374151]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header with close button */}
-          <div className="sticky top-0 bg-gray-900/90 z-10 px-6 py-4 border-b border-white/10 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">Your Liked Movies</h2>
+          <div className="sticky top-0 bg-[#111827] z-10 px-6 py-4 border-b border-[#374151] flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-white">Your Liked Movies</h2>
+              <p className="text-sm text-gray-400 mt-1">Movies you've marked as favorites</p>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-[#374151] rounded-lg"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -95,16 +98,16 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
           <div className="p-6">
             {wishlist.length === 0 ? (
               <div className="text-center py-12">
-                <div className="mx-auto w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mx-auto w-20 h-20 rounded-full bg-[#374151] flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-medium text-white mb-2">No liked movies yet</h3>
-                <p className="text-blue-300 mb-6">Start liking movies to build your collection</p>
+                <p className="text-gray-400 mb-6">Start liking movies to build your collection</p>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="px-5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors font-medium"
                 >
                   Discover Movies
                 </button>
@@ -116,7 +119,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                   {sortedWishlist.map((movie) => (
                     <div
                       key={movie.id}
-                      className="bg-gray-800 rounded-lg overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer"
+                      className="bg-[#374151] rounded-xl overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer border border-[#4B5563]"
                       onClick={() => setSelectedMovie(movie)}
                     >
                       <div className="relative aspect-[2/3]">
@@ -127,22 +130,22 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="absolute inset-0 bg-gray-700 flex items-center justify-center">
-                            <span className="text-gray-400 text-sm text-center px-2">{movie.title}</span>
+                          <div className="absolute inset-0 bg-[#4B5563] flex items-center justify-center">
+                            <span className="text-gray-300 text-sm text-center px-2">{movie.title}</span>
                           </div>
                         )}
 
                         {/* Source badge */}
-                        <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-opacity-80"
+                        <div className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-medium"
                           style={{
-                            backgroundColor: movie.source === 'recommended' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(139, 92, 246, 0.8)'
+                            backgroundColor: movie.source === 'recommended' ? 'rgba(99, 102, 241, 0.8)' : 'rgba(139, 92, 246, 0.8)'
                           }}>
                           {movie.source === 'recommended' ? 'Rec' : 'Trend'}
                         </div>
 
                         {/* Rating badge */}
                         {movie.rating && (
-                          <div className="absolute top-2 right-2 bg-yellow-600/80 text-white px-1.5 py-0.5 rounded text-xs">
+                          <div className="absolute top-2 right-2 bg-amber-500/80 text-white px-2 py-1 rounded-lg text-xs font-medium">
                             ★ {movie.rating}
                           </div>
                         )}
@@ -154,16 +157,16 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                               e.stopPropagation();
                               handleRemoveFromWishlist(movie.id);
                             }}
-                            className="bg-black/50 hover:bg-red-600 text-white p-1.5 rounded-full transition-colors"
+                            className="bg-black/50 hover:bg-rose-600 text-white p-2 rounded-lg transition-colors"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
 
                         {/* Date added indicator */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent py-2 px-3">
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent py-3 px-3">
                           <p className="text-gray-300 text-xs">
                             Added {formatDate(movie.releaseDate)}
                           </p>
@@ -180,167 +183,6 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                   ))}
                 </div>
 
-                {/* Movie details modal */}
-                {selectedMovie && (
-                  <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
-                    <div
-                      className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* Close button */}
-                      <button
-                        className="absolute top-4 right-4 text-white/80 hover:text-white z-20 bg-black/30 rounded-full p-2"
-                        onClick={() => setSelectedMovie(null)}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-
-                      <div className="flex flex-col md:flex-row">
-                        {/* Movie poster */}
-                        <div className="w-full md:w-1/3 relative h-80 md:h-auto">
-                          {selectedMovie.posterPath ? (
-                            <img
-                              src={selectedMovie.posterPath}
-                              alt={selectedMovie.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-blue-900/50">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                              </svg>
-                            </div>
-                          )}
-
-                          {/* Source badge */}
-                          <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium bg-opacity-90"
-                            style={{
-                              backgroundColor: selectedMovie.source === 'recommended' ? 'rgba(59, 130, 246, 0.9)' : 'rgba(139, 92, 246, 0.9)'
-                            }}>
-                            {selectedMovie.source === 'recommended' ? 'Recommended' : 'Trending'}
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6 md:p-8 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-bold text-white mb-2">{selectedMovie.title}</h2>
-                            {selectedMovie.rating && (
-                              <div className="flex items-center">
-                                <span className="text-yellow-400 mr-1">★</span>
-                                <span className="text-white font-medium">{selectedMovie.rating}</span>
-                                <span className="text-blue-300 text-xs ml-1">/10</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center text-blue-300 text-sm space-x-3 mt-1 mb-6">
-                            <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
-                            {movieDetails?.runtime && (
-                              <>
-                                <span>•</span>
-                                <span>{formatRuntime(movieDetails.runtime)}</span>
-                              </>
-                            )}
-                            {movieDetails?.genres && (
-                              <>
-                                <span>•</span>
-                                <span>{movieDetails.genres.map((g: any) => g.name).join(', ')}</span>
-                              </>
-                            )}
-                          </div>
-
-                          {/* Genre tags */}
-                          {movieDetails?.genres && (
-                            <div className="flex flex-wrap gap-2 mb-6">
-                              {movieDetails.genres.map((genre: any) => (
-                                <span key={genre.id} className="bg-blue-800/40 text-blue-100 px-3 py-1 rounded-full text-xs">
-                                  {genre.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Overview */}
-                          <div className="mb-6">
-                            <h4 className="text-blue-200 font-medium mb-2">Overview</h4>
-                            <p className="text-blue-100 leading-relaxed">
-                              {selectedMovie.description || movieDetails?.overview || 'No description available.'}
-                            </p>
-                          </div>
-
-                          {/* Cast and crew */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            {/* Director */}
-                            {movieDetails?.credits?.crew?.find((c: any) => c.job === 'Director')?.name && (
-                              <div>
-                                <h4 className="text-blue-200 font-medium mb-2">Director</h4>
-                                <p className="text-white">
-                                  {movieDetails.credits.crew.find((c: any) => c.job === 'Director').name}
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Cast */}
-                            {movieDetails?.credits?.cast?.length > 0 && (
-                              <div>
-                                <h4 className="text-blue-200 font-medium mb-2">Cast</h4>
-                                <p className="text-white">
-                                  {movieDetails.credits.cast.slice(0, 5).map((c: any) => c.name).join(', ')}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Watch providers if available */}
-                          {movieDetails?.['watch/providers']?.results?.US?.flatrate && (
-                            <div className="mb-6">
-                              <h4 className="text-blue-200 font-medium mb-2">Available on</h4>
-                              <div className="flex space-x-2">
-                                {movieDetails['watch/providers'].results.US.flatrate.slice(0, 5).map((provider: any) => (
-                                  <div key={provider.provider_id} className="flex items-center bg-gray-800/50 px-3 py-1 rounded-full">
-                                    {provider.logo_path && (
-                                      <img
-                                        src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                                        alt={provider.provider_name}
-                                        className="w-4 h-4 mr-1.5 rounded-full"
-                                      />
-                                    )}
-                                    <span className="text-xs">{provider.provider_name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Date added */}
-                          <div className="mt-6 pt-6 border-t border-white/10">
-                            <p className="text-blue-300 text-sm">
-                              Added to likes on {formatDate(selectedMovie.dateAdded || selectedMovie.releaseDate)}
-                            </p>
-
-                            {/* Remove button */}
-                            <button
-                              onClick={() => {
-                                handleRemoveFromWishlist(selectedMovie.id);
-                                setSelectedMovie(null);
-                              }}
-                              className="mt-4 flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-300 rounded-lg transition-colors"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                              Remove from likes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Clear Wishlist Button */}
                 {wishlist.length > 0 && (
                   <div className="mt-8 text-center">
@@ -355,7 +197,7 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
                           });
                         }
                       }}
-                      className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 rounded-lg transition-colors text-sm"
+                      className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors text-sm font-medium"
                     >
                       Clear All Liked Movies
                     </button>
@@ -366,6 +208,167 @@ const WishlistModal: React.FC<WishlistModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+
+      {/* Movie details modal */}
+      {selectedMovie && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 flex items-center justify-center" onClick={() => setSelectedMovie(null)}>
+          <div
+            className="bg-gradient-to-b from-gray-900/95 to-blue-900/95 rounded-xl overflow-hidden shadow-2xl max-w-5xl w-full mx-4 md:mx-8 animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              className="absolute top-4 right-4 text-white/80 hover:text-white z-20 bg-black/30 rounded-full p-2"
+              onClick={() => setSelectedMovie(null)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex flex-col md:flex-row">
+              {/* Movie poster */}
+              <div className="w-full md:w-1/3 relative h-80 md:h-auto">
+                {selectedMovie.posterPath ? (
+                  <img
+                    src={selectedMovie.posterPath}
+                    alt={selectedMovie.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-blue-900/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-blue-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Source badge */}
+                <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium bg-opacity-90"
+                  style={{
+                    backgroundColor: selectedMovie.source === 'recommended' ? 'rgba(59, 130, 246, 0.9)' : 'rgba(139, 92, 246, 0.9)'
+                  }}>
+                  {selectedMovie.source === 'recommended' ? 'Recommended' : 'Trending'}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 md:p-8 flex-1">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-3xl font-bold text-white mb-2">{selectedMovie.title}</h2>
+                  {selectedMovie.rating && (
+                    <div className="flex items-center">
+                      <span className="text-yellow-400 mr-1">★</span>
+                      <span className="text-white font-medium">{selectedMovie.rating}</span>
+                      <span className="text-blue-300 text-xs ml-1">/10</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center text-blue-300 text-sm space-x-3 mt-1 mb-6">
+                  <span>{new Date(selectedMovie.releaseDate).getFullYear()}</span>
+                  {movieDetails?.runtime && (
+                    <>
+                      <span>•</span>
+                      <span>{formatRuntime(movieDetails.runtime)}</span>
+                    </>
+                  )}
+                  {movieDetails?.genres && (
+                    <>
+                      <span>•</span>
+                      <span>{movieDetails.genres.map((g: any) => g.name).join(', ')}</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Genre tags */}
+                {movieDetails?.genres && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {movieDetails.genres.map((genre: any) => (
+                      <span key={genre.id} className="bg-blue-800/40 text-blue-100 px-3 py-1 rounded-full text-xs">
+                        {genre.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Overview */}
+                <div className="mb-6">
+                  <h4 className="text-blue-200 font-medium mb-2">Overview</h4>
+                  <p className="text-blue-100 leading-relaxed">
+                    {selectedMovie.description || movieDetails?.overview || 'No description available.'}
+                  </p>
+                </div>
+
+                {/* Cast and crew */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Director */}
+                  {movieDetails?.credits?.crew?.find((c: any) => c.job === 'Director')?.name && (
+                    <div>
+                      <h4 className="text-blue-200 font-medium mb-2">Director</h4>
+                      <p className="text-white">
+                        {movieDetails.credits.crew.find((c: any) => c.job === 'Director').name}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Cast */}
+                  {movieDetails?.credits?.cast?.length > 0 && (
+                    <div>
+                      <h4 className="text-blue-200 font-medium mb-2">Cast</h4>
+                      <p className="text-white">
+                        {movieDetails.credits.cast.slice(0, 5).map((c: any) => c.name).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Watch providers if available */}
+                {movieDetails?.['watch/providers']?.results?.US?.flatrate && (
+                  <div className="mb-6">
+                    <h4 className="text-blue-200 font-medium mb-2">Available on</h4>
+                    <div className="flex space-x-2">
+                      {movieDetails['watch/providers'].results.US.flatrate.slice(0, 5).map((provider: any) => (
+                        <div key={provider.provider_id} className="flex items-center bg-gray-800/50 px-3 py-1 rounded-full">
+                          {provider.logo_path && (
+                            <img
+                              src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                              alt={provider.provider_name}
+                              className="w-4 h-4 mr-1.5 rounded-full"
+                            />
+                          )}
+                          <span className="text-xs">{provider.provider_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Date added */}
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <p className="text-blue-300 text-sm">
+                    Added to likes on {formatDate(selectedMovie.dateAdded || selectedMovie.releaseDate)}
+                  </p>
+
+                  {/* Remove button */}
+                  <button
+                    onClick={() => {
+                      handleRemoveFromWishlist(selectedMovie.id);
+                      setSelectedMovie(null);
+                    }}
+                    className="mt-4 flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-300 rounded-lg transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove from likes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast notification */}
       {toast.show && (
